@@ -1,0 +1,79 @@
+Some Summary Notes for modern cpp:
+
+Type Deduction:
+
+	On Templates:
+		
+	Teamplate						Usage
+	-------------------------------------------------------------------------------------------------------
+	template<typename T> void f(ParamType param);		f(expr); //call f with some expression
+	template<typename T> void f(const T& param);		int x = 0; f(x); //ParamType is const int& and T is int
+	
+	That not working as expected every time and there are three Cases:
+
+	1. ParamType is a pointer or reference type(not a universal reference)
+	2. ParamType is a universal reference.
+	3. ParamType is neither a pointer nor a reference.
+
+	At 1.) ParamType is a pointer or reference type(not a universal reference)
+	
+	template<typename T> void f(T& param);// param is a reference
+
+	int x = 27;			      // x is an int
+	const int cx = x;		      // cx is a const int
+	const int& rx = x;		      // rx is a reference to x as a const int
+	f(x);				      // T is int, param's type is int&
+	f(cx);				      // T is const int, ParamType is const int&
+	f(rx);				      // T is const int, ParamType is const int&
+					      // T is deducted to be a non-reference, because rx reference-ness is ignored during type deduction
+
+	All Examples at 1.) are lvalue reference parameter, but type deductions works exactly the same way for rvalue reference parameter.
+
+	template<typename T> void f(const T& param); // param is now a ref-to-const
+	
+	f(x);				      // T is int, params type is const int&
+	f(cx);				      // T is int, params type is const int&
+	f(rx);				      // T is int, params type is const int&
+					      // T is deducted to be a non-reference, because rx reference-ness is ignored during type deduction
+	
+	With Pointer(or a pointer to const), it works the same way
+
+	template<typename T> void f(T* param);	//param is now a pointer
+
+	const int *px = &x		       	// px is a ptr to x as a const int
+	
+	f(&x);				       	// T is int, params type is int *
+	f(px);					// T is const int, params type is const int *
+
+	At 2.) ParamType is a universal reference.
+
+	If expr is an lvalue then T and Paramtype are lvalues. Only situation who T becomes a reference and rvalue declared param will be an lvalue reference.
+	If expr is an rvalue, the normal rules are applied.
+
+	template<typename T> void f(T&& param); // param is now a universal reference
+	
+	f(x);					// x is lvalue, T is int&, paramType is also int&
+	f(cx);					// cx is lvalue, T is const int&, paramType is also const int&
+	f(rx);					// rx is lvalue, T is const int&, paramType is also const int&
+	f(27);					// 27 is rvalue, T is int, paramType is int&&
+
+	At 3.) ParamType is neither a Pointer nor a Reference
+
+	Dealing with pass by value, it will be a copy of what ever passed in.
+
+	If expr is a reference, ignore the reference part.
+	If after ignoring expr reference-ness, expr is const, ignore that too. If its volatile, also ignore that.
+	
+	template<typename T> void f(T param);	//param is now passed by value
+				
+	f(x);					// T and paramType are both int
+	f(cx);					// T and paramType are both int
+	f(rx);					// T and paramType are both int
+
+	const char* const ptr = "bla ptr";	// ptr is const pointer to const object
+	f(ptr);					// pass arg of type const char * const
+						// constness of ptr was ignored but content points to is const
+
+	Array Arguments
+
+	
