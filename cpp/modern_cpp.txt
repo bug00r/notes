@@ -15,7 +15,7 @@ Type Deduction:
 	2. ParamType is a universal reference.
 	3. ParamType is neither a pointer nor a reference.
 
-	At 1.) ParamType is a pointer or reference type(not a universal reference)
+	-- At 1.) ParamType is a pointer or reference type(not a universal reference)
 	
 	template<typename T> void f(T& param);// param is a reference
 
@@ -45,7 +45,7 @@ Type Deduction:
 	f(&x);				       	// T is int, params type is int *
 	f(px);					// T is const int, params type is const int *
 
-	At 2.) ParamType is a universal reference.
+	-- At 2.) ParamType is a universal reference.
 
 	If expr is an lvalue then T and Paramtype are lvalues. Only situation who T becomes a reference and rvalue declared param will be an lvalue reference.
 	If expr is an rvalue, the normal rules are applied.
@@ -57,7 +57,7 @@ Type Deduction:
 	f(rx);					// rx is lvalue, T is const int&, paramType is also const int&
 	f(27);					// 27 is rvalue, T is int, paramType is int&&
 
-	At 3.) ParamType is neither a Pointer nor a Reference
+	-- At 3.) ParamType is neither a Pointer nor a Reference
 
 	Dealing with pass by value, it will be a copy of what ever passed in.
 
@@ -74,6 +74,38 @@ Type Deduction:
 	f(ptr);					// pass arg of type const char * const
 						// constness of ptr was ignored but content points to is const
 
-	Array Arguments
+	-- Array Arguments --
+
+	const char name[] = "Test Bla!";	// name type is const char[10]
+	const char *ptrToName = name;		// Array decays to Pointer
+
+	template<typename T> void f(T param);	// Template with by value paramenter
+	f(name);				// T deducted to be const char*
+
+	Functions can't declare paramters that are truly Arrays, they can declare parameters that are references to arrays.
+
+	template<typename T> void f(T& param);	// Template with by-reference parameter
+	f(name);				// pass array to f, T is const char[10], param Type is const char (&)[10]
+
+	!! The Ability to declare references to arrays enables creation of Templates that deduces the number of elements that an array contains.
+
+	template<typename T, std::size_t N>
+	constexpr std::size_t arraySize(T (&)[N]) noexcept
+	{
+		return N;
+	}
+
+	As declared as constexpr this function is available during compilation. so You can do this:
+
+	int keyVals[] = {1,2,3,4,5,6,7}; // array has 7 Elements
+	int mapped[arraySize(keyVals)];  // same size => 7 Elements
+
+	modern c++ version:
+
+	std::array<int, arraySize(keyVals)> mapped; // mapped with size 7
+
+	!! noexcept helps compiler generate better code
+
+	-- Function Arguments --
 
 	
