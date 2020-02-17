@@ -1,0 +1,8 @@
+A short introduction into tcl/tk
+--------------------------------
+# set varName with value "val" and returns "val"
+set varName val 
+
+# TCL Array are assoziative and "array" with index "test" were set to "val"
+set array(test) val
+
