@@ -6,3 +6,66 @@ set varName val
 # TCL Array are assoziative and "array" with index "test" were set to "val"
 set array(test) val
 
+Text in "" will be substituted if not escaped
+Text in {} will not be substituted
+
+expr command should every time set in {}, because:
+
+	% set userinput {[puts DANGER!]}
+	[puts DANGER!]
+	% expr $userinput == 1
+	DANGER!
+	0
+	% expr {$userinput == 1}
+	0
+
+switch can evaluate strings with pattern matches too
+	- glob style pattern using * any number of chars
+	- Option "-exact" searching literal strings
+	- Option "-regexp" searching against regex
+
+	A Switch without Braces but with "\" Line Escaping will support
+	variable substitution:
+		
+		#substitution won't work
+		switch $test {
+			1 -
+			$bla {
+			}
+		}
+		#substitutions works
+		switch $test\
+			$bla {
+				...
+			}\
+			...
+		
+
+procs are handlin return for returning value or the result of the last command
+also you can made some functions more easy:
+
+	proc sum {arg1 arg2} {
+		set x [expr {$arg1 + $arg2}]
+		return $x
+	}
+
+	proc sum1 { arg1 arg2 } {
+		set x [expr {$arg1 + $arg2}]
+	}
+
+	proc sum2 { arg1 arg2 } {
+		expr {$arg1 + $arg2}
+	}
+
+	puts "sum 2 + 3: [sum 2 3]"
+	puts "sum1 2 + 3: [sum1 2 3]"
+	puts "sum2 2 + 3: [sum2 2 3]"
+
+procs default params
+	proc test { a { b 3} {c 7}} ....
+
+procs varg args(have to be the last declared one)
+	proc test {args}....foreach arg $args.....
+
+in Combination this works
+	proc test { a {default1 3} {default2 2} args } {....}

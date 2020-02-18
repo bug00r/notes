@@ -34,4 +34,62 @@ set B 2
 
 puts "Sum: [expr {$A(1)+$A($B)}]"
 
+puts "1/2 [expr {1/2}]"
+puts "-1/2 [expr {-1/2}]"
+puts "-1./2 [expr {-1./2}]"
+puts "1/2 [expr {1./2}]"
+puts "1/3 [expr {1./3}]"
+puts "1/3 [expr {double(1)/3}]"
+
+puts {Some Examples on Floating Point numbers:}
+
+puts "1/2 : [expr {1./2}]"
+puts "1/3 : [expr {1./3}]"
+
+set aa [expr {1.0/3.0}]
+puts "3*(1/3) : [expr {3*$aa}]"
+
+set bb [expr {10.3/3.0}]
+puts "3*(10/3) : [expr {3.0*$bb}]"
+
+set cc [expr {10.0/3.0}]
+set dd [expr {2.0/3.0}]
+puts "(10.0/3.0) / (2.0/3.0): [expr {$cc/$dd}]"
+
+set ee [expr {1.0/10.0}]
+puts "1.2 / 0.1 : [expr {1.2/$ee}]"
+
+
+#
+# The wrong Way
+#
+
+set number [expr {int(1.2/0.1)}] ;# Force an Integer - 
+				 ;# accidentally number = 11
+
+for { set i 0 } { $i <= $number } { incr i } {
+	set x [expr {$i*0.1}]
+	puts "$x"
+}
+
+#
+# A right Way
+#
+
+set xx 0.0
+set delta 0.1
+
+while { $xx < 1.2+0.5*$delta } {
+	set xx [expr {$xx + $delta}]
+	puts $xx
+}
+
+#
+# Two different estimates of "pi"
+#
+
+set pi1 [expr {4.0*atan(1.0)}]
+set pi2 [expr {6.0*asin(0.5)}]
+puts [expr {$pi1-$pi2}]
+
 
