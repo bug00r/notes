@@ -69,3 +69,14 @@ procs varg args(have to be the last declared one)
 
 in Combination this works
 	proc test { a {default1 3} {default2 2} args } {....}
+
+
+-- Lists
+list 	{{i1} {i2} {i3}}; # creation of list with items
+split	"test.bla.blub.foo.bar" ".";# created list with split
+lindex	$myList 1; # get index 1 of list
+lindex  $myList 1 2 3;# multiple index possible at list of list of list...
+
+set x "a b c d e f"
+lindex $x 2;# results in 'c'
+
