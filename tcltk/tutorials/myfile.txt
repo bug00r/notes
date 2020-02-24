@@ -1,0 +1,9 @@
+The file I/O is buffered. The output may not be sent out when you expect it to be sent. Files will all be closed and flushed when your program exits normally, but may only be closed (not flushed) if the program is terminated in an unexpected manner.
+There are a finite number of open file slots available. While the exact number depends on the operating system you are using and its configuration, in practice you can have several hundreds of open files at a time. If you need more than that, you may need to reexamine your program.
+An empty line is indistinguishable from an EOF with the command set string [gets filename]. Use the eof command to determine if the file is at the end or use the other form of gets (see the example).
+You can't overwrite any data in a file that was opened with a (append) access. You can, however, seek to the beginning of the file for gets commands.
+Opening a file with the w+ access will allow you to overwrite data, but will delete all existing data in the file.
+Opening a file with the r+ access will allow you to overwrite data, while saving the existing data in the file.
+By default the commands assume that strings represent "readable" text. If you want to read "binary" data, you will have to use the fconfigure command.
+Often, especially if you deal with configuration data for your programs, you can use the source command instead of the relatively low-level commands presented here. Just make sure your data can be interpreted as Tcl commands and "source" the file.
+

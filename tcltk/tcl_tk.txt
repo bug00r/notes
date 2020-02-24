@@ -80,3 +80,5 @@ lindex  $myList 1 2 3;# multiple index possible at list of list of list...
 set x "a b c d e f"
 lindex $x 2;# results in 'c'
 
+-- arrays 
+can only be accessed via "pointer" to a proc with the comman upvar.
