@@ -82,3 +82,66 @@ lindex $x 2;# results in 'c'
 
 -- arrays 
 can only be accessed via "pointer" to a proc with the comman upvar.
+
+
+--example class
+
+    ::oo::class create range {
+        variable max 
+        variable current
+
+        constructor {upto} {
+            my max $upto
+        }
+
+        destructor {
+            puts "Destroying [self]"
+        }
+
+        method max {upto} {
+            variable max 
+            variable current
+            set max     $upto
+            set current -1
+        }
+
+        method next {varName} {
+            upvar $varName var
+            incr current
+            set var $current
+            if { $var < $max } {
+                return 1
+            } else {
+                return 0
+            }
+        }
+    }
+	
+  # changes o class from putside
+  ::oo::define range method reset {} {set current -1}
+
+  #Inheritance
+    ::oo::class create newrange {
+        superclass range
+        method reset {} {set current -1}
+    }
+  
+  # cloning objects 
+    ::oo::copy xrange yrange
+  
+  # object definitions
+    ::oo::objdefine $yrange {
+        method reset {} {
+            my variable current
+            puts "resetting ..."
+            set current -1
+        }
+    }
+
+If the method's name starts with an upper case letter it is private.
+If the method's name starts with a lower case letter it is public.
+
+# you have to destroy objects, otherwise they life long the interpreter is
+running or you call despproy
+    myobj destroy
+

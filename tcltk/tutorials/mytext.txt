@@ -1,0 +1,6 @@
+As of version 8.6, Tcl supports ''coroutines'' as a programming feature. The main
+advantage of coroutines is that they they make certain tasks much simpler to
+implement, especially tasks that need to
+to keep a lot of information around and need to cooperate with other tasks.
+Coroutines are useful in fact for implementing co-operative multitasking - not to be
+confused with multiprocessing.
