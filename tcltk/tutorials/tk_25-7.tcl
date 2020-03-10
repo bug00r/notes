@@ -11,9 +11,9 @@ pack .menubar.alpha -side left
 pack .menubar.beta -side right
 
 pack .menubar -side top -fill x
-pack .body
+pack .body 
 
 
 
 
-
+ 
