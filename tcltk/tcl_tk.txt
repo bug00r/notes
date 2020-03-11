@@ -145,3 +145,38 @@ If the method's name starts with a lower case letter it is public.
 running or you call despproy
     myobj destroy
 
+TK- pack Rules:
+
+-Pack vertically (-side top and -side bottom) or horizontally (-side left and -side right) within a frame. Only rarely will a different
+mixture of packing directions work out the way you want. Add frames to build more complex structures.
+
+-By default, the packer puts widgets into their parent frame, and the parent frame must be created before the children that are
+packed into it.
+
+-If you put widgets into other relatives, remember to create the frames first so the frames stay underneath the widgets packed into
+them.
+
+-By default, the packer ignores -width and -height attributes of frames that have widgets packed inside them. It shrinks frames to be
+just big enough to allow for its border width and to hold the widgets inside them. Use pack propagate to turn off the shrink-wrap
+behavior.
+
+-The packer distinguishes between packing space and display space. A widget's display might not take up all the packing space
+allocated to it.
+
+-The -fill option causes the display to fill up the packing space in the X or Y directions, or both.
+
+-The -expand true option causes the packing space to expand into any room in the packing cavity that is otherwise unclaimed. If
+more than one widget in the same frame wants to expand, then they share the extra space.
+
+-The -ipadx and -ipady options allocate more display space inside the border, if possible.
+
+-The -padx and -pady options allocate more packing space outside the border, if possible. The widget never fills this space. These
+values may be specified as a list of two values to get asymmetric padding (Tk 8.4.)
+
+
+grid:
+	# example tk grid 08 (don't understand that for now)
+	- represents a spanned column.
+	^ represents a spanned row.
+	x represents a skipped cell.
+
