@@ -7,4 +7,3 @@ foreach { field label } {name Name address1 Address address2 {} phone Phone} {
 	bind .e$field <Return> UpdateAddress
 }
 
-#733
