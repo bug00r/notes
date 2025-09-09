@@ -1,0 +1,993 @@
+#######################
+Perl Web 
+#######################
+
+- perl is per default very forgiving, for more robustness add these lines before each script:
+        #!/usr/bin/perl
+        use strict;         # stops program immediatelly
+        use warnings;       # print warnings
+
+    - three stricts possible: "subs", "vars" and "refs"
+- no need for main()
+- comment:    # my comment
+- whitespate is irrelevant:     print 
+                                        "Hello World!"
+                                        ;
+- ...except inside quoted Strings
+        # this would print with a linebreak in the middle
+        print "Hello
+        world";
+- single an double quotes possible
+- single quote does not string interpolation vars
+    print "Hello, $name\n"  # works fine and prints name
+    print 'Hello, $name\n'  # prints $name\n literally
+- number no need quotes
+    print 42;
+- Parentheses are no must have but own flavour, they only required to clarify precedence
+    print("hello world\n");
+    print "hello world\n";
+- Variable Types, three mains exists: scalars, arrays and hashes
+
+    - Scalar represents single value:   my $animal = "camel";
+                                        my $answer = 42;
+
+        scalars can be:     - strings
+                            - integers
+                            - floating point numbers
+        
+        - auto convert if required.
+        - first declaration with my is set by "use strict;"
+        - various usage:
+                print $animal;
+                print "The animal is $animal\n"
+                print "The quare if $answer is ", $answer * $answer, "\n";
+        - there some magic vars you can find here: https://perldoc.perl.org/perlvar
+        - special var: $_  # called default variable
+        - print;    #prints contents of $_ by default
+    
+    - Arrays
+
+        example:    my @animals = ("camel", "llama", "owl");
+                    my @numbers = (1,2,3);
+                    my @mixed   = ("camel", 23, 53.4);
+
+        - Arrays are zero indexed: print("1. animal: $animals[0] ... $animals[1]");  # prints 1. animal: camel ... llama
+        - $#array tells you last index of array, its a special variable
+        - @animals will find the number of elements, same als "$#animals + 1", but is bothering and to much to write ;)
+        - getting single value with $ because this is an scalar, also you got an scalar
+            print($mixed[$#mixed]); #last element and 53.4
+        - To get multiple values from array, with array slices:
+                @animals[0,1];              # gives ("camel", "llama");
+                @animals[0..2];             # gives ("camel", "llama", "owl");
+                @animals[1..$#animals];     # gives all except the first
+        - various useful things with lists:
+
+                my @sorted      = sort(@animals);
+                my @backwards   = reverse(@numbers);
+        - there are special arrays like:
+            @ARGV   = the command line argument to your script
+            @_      = arguments passed to a sub routine
+
+            more you can find here:    https://perldoc.perl.org/perlvar
+
+    - Hashes
+
+        - examples:
+                    my %fruit_color = ("apple", "red", "banana", "yellow");
+                    my %fruit_color = (
+                        apple   => "red",
+                        banana  => "yellow",
+                    );  # usage whitespace an => operator
+
+        - get hash elemens: $fruit_color{"apple"};  # gives red
+        - keys and values of a hash
+            my @fruits  = keys(%fruit_color);
+            my @colors  = values(%fruit_color);
+        - Hashes are unsorted but you can fetch keys, sort them and iterate.
+        - Spexial Hashes are existing: (more here: https://perldoc.perl.org/perlvar)
+            %ENV    = contains all Environment Entries
+        - a Reference is a scalar value and can refer to any perl datatype:
+
+                Example, two level hash using anonymous hash ref:
+
+                    my $variables = {
+                        scalar => {
+                            description => "single item",
+                            sigil       => '$'
+                        },
+                        array => {
+                            description => "ordered list of items",
+                            sigil = '@'
+                        },
+                        hash => {
+                            description => "key/value pairs",
+                            sigil = '%'
+                        },
+                    };
+
+                print("Skalars begin with a $variables->{'scalar'}->{'sigil'}\n");
+- Variable Scoping
+
+    - $var = "value";   # creates global variable, but this is bad style
+    - my $var = "value" # creates lexically scoped variable, sciped into a block( curly braces )
+
+        example:
+                my $x = "foo";
+                my $some_condition = 1;
+                if ($some_condition) {
+                    my $y = "bar";
+                    print($x);  # prints foo
+                    print($y);  # prints bar
+                }
+                print($x);  # prints foo
+                print($y);  # prints nothing, $y has fallen  out of scoped
+
+- conditional and loopiong constructors
+
+    - As os Perl 5.10 there is a case switch statement:
+
+            use v5.10.1;
+            given ($var) {
+                when (/^abc/) { $abc = 1 }
+                when (/^def/) { $def = 1 }
+                when (/^xyz/) { $xyz = 1 }
+                default       { $nothing = 1 }
+            }
+
+    - If
+        if(condition) {
+            ...
+        } elsif ( other condition ) {
+            ...
+        } else {
+
+        }
+
+        negative version(more readable as if (!condition)):
+
+            unless ( condigtion ) {
+                .....
+            }
+
+        # the traditional way:
+        if ($zippy) {
+            print "Yow!"
+        }
+
+        # the perlish post condition way
+        print "yow!" if $zippy;
+        print "We have no Bananas" unless $bananas
+
+    - while 
+
+        - while ( condition ) {
+            ...
+        }
+
+        - negated version
+
+            until ( condition ) {
+                ...
+            }
+
+        - post condition: print "LALALALALA\n" while 1; # loops forever
+
+    - for (exactly like C):
+
+        for ($i = 0; $i <= $max; $i++) {
+            ...
+        }
+
+    - foreach: details: https://perldoc.perl.org/perlsyn#Foreach-Loops
+
+        foreach (@array) {
+            print("This element is $_\n");
+        }
+
+        print($list[$_]) foreach 0 .. $max;
+
+        # you don't have to use the default $_ either
+        foreach my $key ( keys(%hash) ) {
+            print("The value of $key is $hash{$key}\n");
+        }
+
+- Built in Operators
+
+        - perl funcs: https://perldoc.perl.org/perlfunc
+        - perl operators: https://perldoc.perl.org/perlop
+        Arithmetic
+            +   addition
+            -   subtraction
+            *   multiplication
+            /   division
+
+        Numeric comparison
+            ==  equality
+            !=  inequality
+            <   less than
+            >   greater than
+            <=  less than or equal
+            >=  greater than or equal
+
+        String comparison
+            eq  equality
+            ne  inequality
+            lt  less than
+            gt  greater than
+            le  less than or equal
+            ge  greater than or equal
+            
+        Boolean logic
+            &&  and
+            ||  or
+            !   not
+
+        Miscellaneous
+            =   assignment
+            .   string concatenation
+            x   string multiplication (repeats strings)
+            ..  range operator (creates a list of numbers or strings)
+
+        Many operators can be combined with a = as follows:
+            $a += 1;        # same as $a = $a + 1
+            $a -= 1;        # same as $a = $a - 1
+            $a .= "\n";     # same as $a = $a . "\n";
+
+- Files and io (detailed: https://perldoc.perl.org/perlfunc#open-FILEHANDLE%2CMODE%2CEXPR)
+
+    - you have to "open" and finally "close" a file handler for using.
+    - opening filehandler: OK = open(HANDLE, MODE, PATHNAME)
+        OK = return file handle otherwise "undef"
+        HANDLE= undefined skalar, will filled by open
+        MODE = The kind of file interactiong
+            "< :encoding(UTF-8)"     # open reading mode with utf 8 encoding
+            "> :encoding(UTF-8)"     # open writing mode with clobbing in UTF-8
+            ">> :encoding(UTF-8)"    # open in APPEND Mode with utf-8
+            "-| :encoding(UTF-8)"    # opening reading Pipe (Unix kind OS only or Windows since Perl 5.22)
+            "|- :encoding(UTF-8)"    # opening writing pipe(Example below)
+        PATHNAME = the external Path you want to open or an Execution String for external programms or as List
+
+        Example:
+            my $filename    = "/path/file/name.mime";
+            my $encoding    = ":encoding(UTF-8)";
+            my $handle      = undef; # this will be filled by open on successfully
+
+            open($handle, "< $encoding", $filename) || die "$0: can't open $filename for reading: $!";  #reading a file
+            open($handle, "> $encoding", $filename) || die "$0: can't open $filename for writing(clobbing): $!";
+            open($handle, ">> $encoding",$filename) || die "$0: can't open $filename for appending: $!"
+
+            ....
+            
+            my $line  = <$handle>;
+            my @lines = <$handle>;
+
+            while (<$handle>) {     # assigns each line in turn to $_
+                print "Just read in this line: $_";
+            }
+
+            print STDERR "This is your final warning.\n";
+            print $handle $record;
+            print $handle $logmessage;
+            
+            
+            ....
+
+
+            close $handle or die "$handle: $!";
+
+
+    - for reading/writing content you can use one of the following functions:
+            Reading:
+                1. readline or <$handle>    #readline($handle) is the same like <$handle>
+                2. read
+                3. getc 
+                4. sysread 
+            Writing:
+                1. print
+                2. printf
+                3. say 
+                4. write
+                5. syswrite
+
+        - readline returns undef at EOF or if an error arose
+
+            - this can be handled by:
+                1.Example
+                    $line = <$handle>
+                    if ( defined($line) ) { #... do something with line}
+                    else { #line is not valid }
+                2. Example
+                    $line = <$handle> || die "no input found";
+
+            - for extracting error handling because EOF and Error are both using undef you can do this:
+
+                while (<$handle>) {
+                    # doing something with $_
+                }
+                if ($!) {
+                    die "unexpected error while reading from $filename: $!";
+                }
+        - Setting encoding on each open call is boring, you can add a global encoding:
+
+                use open qw< :encoding(UTF-8) >;
+                ...
+                open($handle, "<", $filename) || die "$0: can't open $filename for reading: $!";
+                ...
+    - Binary Files
+
+        Example:
+            my $filename = "/path/to/file.mime";
+            my $encoding = ":raw :bytes";
+            my $handle   = undef;
+
+            open($handle, "< $encoding", $filename) || die "....";
+            open($handle, "> $encoding", $filename) || die "....";
+            open($handle, ">> $encoding",$filename) || die "....";
+
+        - alternative, changing to binary mode on existing handle:
+
+            binmode($handle)    || die "cannot binmode $handle";
+            binmode(STDIN)      || die "cannot binmode STDIN";
+            binmode(STDOUT)     || die "cannot binmode STDOUT";
+
+            with encoding:
+
+            binmode(STDIN,  ":encoding(MacRoman)")      || die "cannot binmode STDIN";
+            binmode(STDOUT, ":encoding(UTF-8)")         || die "cannot binmode STDOUT";
+
+        Here's an example of how to copy a binary file:
+
+            my $BUFSIZ   = 64 * (2 ** 10);
+            my $name_in  = "/some/input/file";
+            my $name_out = "/some/output/flie";
+
+            my($in_fh, $out_fh, $buffer);
+
+            open($in_fh,  "<", $name_in)
+                || die "$0: cannot open $name_in for reading: $!";
+            open($out_fh, ">", $name_out)
+                || die "$0: cannot open $name_out for writing: $!";
+
+            for my $fh ($in_fh, $out_fh)  {
+                binmode($fh)               || die "binmode failed";
+            }
+
+            while (read($in_fh, $buffer, $BUFSIZ)) {
+                unless (print $out_fh $buffer) {
+                    die "couldn't write to $name_out: $!";
+                }
+            }
+
+            close($in_fh)       || die "couldn't close $name_in: $!";
+            close($out_fh)      || die "couldn't close $name_out: $!";
+
+    - Using Pipes:
+
+        Reading:
+
+            open(my $sort_fh, '-|', 'sort -u unsorted/*.txt')       
+                or die "Couldn't open a pipe into sort: $!";        # reading
+
+            # And right away, we can start reading sorted lines:
+            while (my $line = <$sort_fh>) {
+                #
+                # ... Do something interesting with each $line here ...
+                #
+            }
+            
+        Writing:
+
+            open(my $cat_fh, '|-', 'cat -n > numbered.txt')
+                or die "Couldn't open a pipe into cat: $!";
+
+            for my $line (@processed) {
+                print $cat_fh $line;
+            }
+
+        Expression as Command List:
+
+            open(my $sort_fh, '-|', 'sort', '-u', glob('unsorted/*.txt'))
+                or die "Couldn't open a pipe into sort: $!";
+
+- Regex
+    Quick Doc:      https://perldoc.perl.org/perlrequick
+    Detailed:       https://perldoc.perl.org/perlretut
+    most detailed:  https://perldoc.perl.org/perlre
+
+    simple matching:    if (/foo/)          {...} # true if $_ contains "foo"
+                        if ($a =~ /foo/)    {...} # true if $a contains "foo"
+
+    Simple Substitution:    s/foo/bar/;         # replaces foo with bar in $__
+                            $a =~ s/foo/bar/;   # replaces foo with bar in $array
+                            $a =~ s/foo/bar/g;  # replaces ALL INSTANCES of foo with bar in $a
+    
+    Capturing:  # a cheap and nasty way to break an email address up into parts
+
+                if ($email =~ /([^@]+)@(.+)/) {
+                    print "Username is $1\n";
+                    print "Hostname is $2\n";
+                }   
+
+- Subroutines (see more: https://perldoc.perl.org/perlsub)
+
+    Example:    sub logger {
+                    my $log_msg = shift;     # shift sub, moves first item of an array. default Argument of shift is 
+                                             # @_ (Special Array of Arguments of a subroutine)
+                    open my $logfile, ">>", "my.log" or die "Could not open my.log: $!";
+                    print $logfile $log_msg
+                }
+
+                # usage
+                logger('this will be logged');
+
+    - Manipulate, usage of @__
+
+        my ($logmessage, $priority) = @_;       # common
+        my $logmessage = $_[0];                 # uncommon, and ugly
+    
+    - return values are possible
+
+        sub square {
+            my $num = shift;
+            my $result = $num * $num;
+            return $result;
+        }
+
+        #usage
+        $sq = aquare(4);
+
+- references
+
+    - Hash Values can only be a Reference, not an Array itself(see above Hashes used by anonymous References)
+    - making references:
+        Rule 1: You put a \ in front of a variable, you get a reference to that variable
+
+                    Examples:   $aref = \@array     # $aref now holds a reference to @array
+                                $href = \%hash      # $href now holds a reference to %hash
+                                $sref = \$scalar    # $sref now holds a reference to $scalar     
+
+                                # you can sote is everywhere
+
+                                $xy = $aref     # $xy now holds a reference to @array
+                                $p[3] = $href   # $p[3] now holds a reference to %hash
+                                $z = $p[3]      # $z now holds a erference to %hash
+
+        Rule 2: [ ITEMS ] creates a new anonymous Array and returns a reference to that array.
+                { ITEMS } creaets a new anonymous HAsh and returns a reference to that hash
+
+                    Examples:   $aref = [1, "foo", undef, 13];  # $aref now holds a reference to an array, empty array with []
+                                $href = { APR => 4, AUG => 8 }; # $href now holds a reference to a hash, empty hash with {}
+
+                                # this:
+                                $aref = [ 1, 2, 3 ];
+
+                                # does the same like this:
+                                @array = (1 , 2, 3);
+                                $aref = \@array;
+    - Using References
+        Rule 1: you can use a reference in curly braces:
+            Arrays:     @a          @{$aref}            An array
+                        reverse @a  reverse @{$aref}    Reverse the array
+                        $a[3]       ${$aref}[3]         An Element of the Array
+                        $a[3] = 17; ${$aref}[3] = 17;   Assign an Element
+            
+            Hashes:     %h              %{$href}                An HAsh
+                        keys %h         keys %{$href}           Get the Keys from the hash
+                        $h{'red'}       ${$href}{'red'}         An Element of the Hash
+                        $h{'red'} = 17  ${$href}{'red'} = 17    Assigning an Element
+
+            You can to all what you need with Rule 1
+
+            Examples:   
+                        for my $element (@array) {              for my $element (@{$aref}) {
+                            ....                                    ....
+                        }                                       }
+
+                        for my $key ( keys %hash ) {            for my $key ( keys %{$href} ) {
+                            print "$key => $hash{$key}\n";          print "$key => ${$href}{$key}\n"
+                        }                                       }
+        
+        Rule 2: Rule 1 is really hard to read, but luckily there is the arrow notation
+
+            ${$ref}[3]      ==      $aref->[3]
+            ${$href}{red}   ==      $href->{red}
+
+        Example 2D Array:
+
+            @a = (
+                [1,2,3],            # reference to (1,2,3) is $a[0] 
+                [4,5,6],            # reference to (4,5,6) is $a[1]
+                [7,8,9]             # reference to (7,8,9) is $a[2]
+            );
+
+            So you have to use:     $a[1]->[2] to get the 6 or 
+                                    $a[2]->[1] to get the 8.
+
+            this is ugly and not comfortable too, also we havve the ARROW Rule
+
+            Arrow Rule: In between two subscripts, the arrow is optional
+
+            so we can use:      $a[1][2] instead of $a[1]->[2] and 
+                                $a[2][1] instead of $a[2]->[1]
+
+            This works with more referene ldimensions too.
+
+                If we would use Rule 1:     ${$a[1]}[2] instead of $a[1][2]
+                                            $x[2][3][5] instead of ${${$x[2]}[3]}[5];   # unreadable
+
+        See complete Example: https://perldoc.perl.org/perlreftut#Solution
+
+        Rest:
+            - we can make references to anything, including scalars, functions and other references
+            - an easier way for handling Rule 1 by removing Braces: 
+                            @$aref      == @{$aref}
+                            $$aref[1]   == @{$aref}[1]
+            - this doesn't copy underlying array:  
+                    $aref2 = $aref1;    # this only copies references
+                    $aref2 = [@{$aref}];# this uses [...] Notation an creates a new anonymous array witht he content of the array $aref1 points to
+                    $href2 = {%{$href}};# same like Array Copy as Hash Copy
+            - to see if a variable is a reference use function "ref". It returns Kind of REF if $_ or the EXPR is a reference, see: https://perldoc.perl.org/perlfunc#ref-EXPR
+            - you can compare reference with == and eq.   == is faster because eq is String compare
+            - you can use Strings as ref, but use strict refs avoid this.
+                    @array = @{"foo"} as usage against Array @foo.
+
+
+- OO Perl:
+    - Further doc:  https://perldoc.perl.org/perlootut
+    -       "       https://perldoc.perl.org/perlobj
+
+
+
+- Using Perl Modules:
+    - How to install:       https://perldoc.perl.org/perlmodinstall
+    - General Description:  https://perldoc.perl.org/perlmod
+    - Module List built in: https://perldoc.perl.org/perlmodlib
+    - Writing own module:   https://perldoc.perl.org/perlnewmod
+    - best practice:        https://perldoc.perl.org/perlmodstyle
+   
+    - namespaces are called package, statement package stays at the files beginning in most cases
+    - a package can included with statement package and following operators: do, require, use
+    - Scope of Package starts at declaration until enclosing Block, eval or End of file
+    - package only affects dynamic global symbols, subroutine names and variables  you have used local() on it
+    - package DOES NOT affect on lexical variables created with my(), our() or state()
+    - Refereing variables in Package: $Package::Variable. If Package name is nullm the main packageis assumed: $::sail is eqivalent to $main::sail
+    - Old Backward compatiblity:
+            usage of: "This is $owner's house", will access $owner::s (s variable in package owner)
+            uses this: "This is ${owner}'s house", for expected results
+    - packages can contain packages: $OUTER::INNER::var, INNER referenced to a separate global package.
+    - Only identifiers atarting with letters(or underscore) are store in package symbol table.
+    - eval'es strings are compiled in the package in which the eval() was compiled
+    - Symbol __PACKAGE__ contains th current package, but cannot (easily) be used to construct variable names.
+            After my($foo), has hidden package variable $foo, it can still be accessed, without knowing what package you are in, as ${__PACKAGE__.'::foo'}
+
+    - Symbol Table(ST) : https://perldoc.perl.org/perlmod#Symbol-Tables
+        - the ST for a package is stored in the hash of that name with two colons appended:
+            - Main ST:  %main:: or %:: for short.
+            - Nested:   %OUTER::INNER::
+        - Values can be access by using *name typeglob notation: local *main::foo = *main::bar;
+        - assignment to typeglob performs aliasing operaton: *dick = *richard; 
+                    #all variables, subroutines and file and directory handles of richard identifier are now accessible with dick identifier
+        - for single aliasing assign references instead: *dick = \$richard; #makes $richard and $dick the same variable, but leaves @richard and @dick as separate arrays
+        - *foo = *bar makes the typeglobs themselves synonymous while *foo = \$bar makes the SCALAR portions of two distinct typeglobs refer to the same scalar value
+            This means:
+                    $bar = 1;
+                    *foo = \$bar;           # Make $foo an alias for \$bar
+
+                    {
+                        local $bar = 2;     # restricted changed to block
+                        print $foo;         # Prints '1'!!
+                    }    
+
+                    This is because $foo holds a reference to the original $bar. The one that was stuffed away by local()
+                    and which will be restored when the blocks ends. Because variables are accessed through the typeglob,
+                    you can use *foo = *bar to create an alias which can be localized. But be aware that this means you 
+                    can't have a separate @foo and @bar etc.
+
+
+Useful: perl commandline(more: https://perldoc.perl.org/perlrun):
+
+**  -V
+
+        prints summary of the major perl configuration values and the current values of @INC.
+    -V:configvar
+
+        Prints to STDOUT the value of the named configuration variable(s), with multiples when your configvar argument looks like a regex (has non-letters). For example:
+
+        $ perl -V:libc
+            libc='/lib/libc-2.2.4.so';
+        $ perl -V:lib.
+            libs='-lnsl -lgdbm -ldb -ldl -lm -lcrypt -lutil -lc';
+            libc='/lib/libc-2.2.4.so';
+        $ perl -V:lib.*
+            libpth='/usr/local/lib /lib /usr/lib';
+            libs='-lnsl -lgdbm -ldb -ldl -lm -lcrypt -lutil -lc';
+            lib_ext='.a';
+            libc='/lib/libc-2.2.4.so';
+            libperl='libperl.a';
+            ....
+
+
+
+####################### 
+BOOK Notes
+#######################
+
+----------------
+The simple Intro
+----------------
+
+Perl Notes:
+($var,$var2) = ($var2,$var)    swapping variables
+($temp –= 32) *= 5/9;          result of arith is lvalue, you can chain it
+
+Table 1-4. Logical operators
+Example     Name    Result
+$a && $b    And     $a if $a is false, $b otherwise
+$a || $b    Or      $a if $a is true, $b otherwise
+! $a        Not     True if $a is not true
+$a and $b   And     $a if $a is false, $b otherwise
+$a or $b    Or      $a if $a is true, $b otherwise
+not $a      Not     True if $a is not true
+$a xor $b   Xor     True if $a or $b is true, but not both
+
+Table 1-5. Comparison operators
+Comparison              Numeric String  Return Value
+Equal                   ==      eq      True if $a is equal to $b
+Not equal               !=      ne      True if $a is not equal to $b
+Less than               <       lt      True if $a is less than $b
+Greater than            >       gt      True if $a is greater than $b
+Less than or equal      <=      le      True if $a not greater than $b
+Greater than or equal   >=      ge      True if $a not less than $b
+Comparison              <=>     cmp     0 if equal, 1 if $a greater, −1 if $b greater
+
+Table 1-6. File test operators
+Example Name        Result
+–e $a   Exists      True if file named in $a exists
+–r $a   Readable    True if file named in $a is readable
+–w $a   Writable    True if file named in $a is writable
+–d $a   Directory   True if file named in $a is a directory
+–f $a   File        True if file named in $a is a regular file
+–T $a   Text File   True if file named in $a is a text file
+
+    example:    –e "/usr/bin/perl" or warn "Perl is improperly installed.\n";
+                –f "/vmlinuz" and say "I see you are a friend of Linus.";
+
+Truth in Perl:
+    - always evaluated in scalar context
+    - Rules
+        1. Any string is true except for "" and "0".
+        2. Any number is true except for 0.
+        3. Any reference is true.
+        4. Any undefined value is false.
+
+            Examples:
+                0           # would become the string "0", so false.
+                1           # would become the string "1", so true.
+                10 – 10     # 10 minus 10 is 0, would convert to string "0", so false.
+                0.00        # equals 0, would convert to string "0", so false.
+                "0"         # is the string "0", so false.
+                ""          # is a null string, so false.
+                "0.00"      # is the string "0.00", neither "" nor "0", so true!
+                "0.00" + 0  # would become the number 0 (coerced by the +), so false.
+                \$a         # is a reference to $a, so true, even if $a is false.
+                undef()     # is a function returning the undefined value, so false.
+
+Condition Statements:
+
+    IF:
+
+        if ($debug_level > 0) {
+            # Something has gone wrong. Tell the user.
+            say "Debug: Danger, Will Robinson, danger!";
+            say "Debug: Answer was '54', expected '42'.";
+        }
+
+        if ($city eq "New York") {
+            say "New York is northeast of Washington, D.C.";
+        }
+        elsif ($city eq "Chicago") {
+            say "Chicago is northwest of Washington, D.C.";
+        }
+        elsif ($city eq "Miami") {
+            say "Miami is south of Washington, D.C. And much warmer!";
+        }
+        else {
+            say "I don't know where $city is, sorry.";
+        }
+
+    UNLESS:
+        “if not this is true, do something”.
+
+        unless ($destination eq $home) {
+            say "I'm not going home.";
+        }
+
+        No elseunless available!!! :D :D
+
+    GIVEN / WHEN (the perl variant of switch case):
+
+        #!/usr/bin/perl
+        use v5.14;
+        print "What is your favorite color? ";
+        chomp(my $answer = <STDIN>);
+        given ($answer) {
+            when ("purple") { say "Me too." }
+            when ("green") { say "Go!" }
+            when ("yellow") { say "Slow!" }
+            when ("red") { say "Stop!" }
+            when ("blue") { say "You may proceed." }
+            when (/\w+, no \w+/) { die "AAAUUUGHHHHH!" }
+            when (42) { say "Wrong answer." }
+            when (['gray','orange','brown','black','white']) {
+                say "I think $answer is pretty okay too.";
+            }
+            default {
+                say "Are you sure $answer is a real color?";
+            }
+        }
+
+- Looping 
+
+    - conditional Loops:
+
+        WHILE:
+            while ( condition ) { ... }  #as long condition is true
+
+        UNTIL:
+            until ( condition ) { ... }  #as long condition is false 
+
+        FOR:
+            for ( init; condition; step ) { .... } # aslong as condition is true      
+            for (;;) { .... } # infinite
+
+        FOREACH:
+            for my $user (@users) {
+                if (–f "$home{$user}/.nexrc") {
+                    say "$user is cool... they use a perl–aware vi!";
+                }
+            }
+
+            for my $key (sort keys %hash) { ... }
+    
+    Breaking out: next(continue) and last(break);
+
+        for my $user (@users) {
+            if ($user eq "root" || $user eq "lp") {
+                next;
+            }
+            if ($user eq "special") {
+                print "Found the special account.\n";
+                # do some processing
+                last;
+            }
+        }
+
+        Breaking multilevel loops: With goto labels and another conditional handling 
+            LINE: while (my $line = <EMAIL>) {
+                next LINE if $line eq "\n"; # skip blank lines
+                last LINE if $line =~ /^>/; # stop on first quoted line
+                # your ad here
+            }
+
+Regular Expressions:
+
+    - pattern matching: /PATTErN/
+            if (/Windows 7/) { print "Time to upgrade?\n" }
+
+            searching URLs:
+                while (my $line = <FILE>) {
+                    if ($line =~ /http:/) {  # the =~ (pattern binding) is telling Perl to look for a match of the regular expression “http:” in the variable $line.
+                        print $line;
+                    }
+                }
+
+                using default variable $_
+                    while (<FILE>) {
+                        print if /http:/;
+                    }
+
+                    extended:
+                    while (<FILE>) {
+                        print if /http:/;
+                        print if /ftp:/;
+                        print if /mailto:/;
+                        # What next?
+                    }
+
+
+
+    - substitution: s/PATTERN/REPLACE/
+            s/IBM/lenovo/;
+    
+    - splitting:
+            my ($good, $bad, $ugly) = split(/,/, "vi,emacs,teco");
+    
+    - Shortcut examples:
+
+        Table 1-7. Shortcuts for alphabetic characters
+        Name            ASCII Definition    Unicode Definition                          Shortcut
+        Whitespace      [ \t\n\r\f]         \p{Whitespace}                              \s
+        Word character  [a–zA–Z_0–9]        [\p{Alphabetic}\p{Digit}\p{Mark} \p{Pc}]    \w
+        Digit           [0–9]               \p{Digit}                                   \d
+    
+    - Quantifiers: +, {1,12} ... see regex reference pocket guide
+
+    - Backrefs
+        s/(\S+)\s+(\S+)/$2 $1/
+        s/(?<alpha>\S+)\s+(?<beta>\S+)/$+{beta} $+{alpha}/  # named groups ?<GROUPNAME> backref to $+{GROUPNAME}
+
+        Table 1-8. Regular expression backreferences
+        Where                   Numbered Group  Named Group
+        Declare                 ( ... )         (?<NAME> ... )
+        Inside same regex       \1              \k<NAME>
+        In regular Perl code    $1              $+{NAME}
+
+- List Processing:
+
+    - sort @dudes, @chicks, other();            # takes threes lists join them together and return a full sorted list
+    - print reverse sort map {lc} keys %hash;   # tooks all keys of a hash, map them with lc, sort the result and reverse it finally
+    - my ($hour, $min, $sec, $ampm) = /(\d+):(\d+):(\d+) *(\w+)/;   # regex match with groups, also backrefs will produce a list you can assign to specific variables or a list itself
+      my @hmsa                      = /(\d+):(\d+):(\d+) *(\w+)/;
+
+--------------------
+The Gory Details :D
+--------------------
+
+* Bits and Pieces
+
+- in default perl handles bytes and chars like ISO-8859-1
+    - for UTF-8 you have set "use utf8;" at the top of the script
+- Tokens can't be broken by whitespaces, a statement are one or more token. But the statement only ends with a semicolon ";"
+- Unicode chars are allowd in a Unicode Perl Program Code
+- comments are introduced by => # : my $comet = 'Haley'; # This is a comment
+  This is multiline PDO( starts with '=' and ends up with '=cut'):
+        =pod
+        my $dog = 'Spot';
+        my $cat = 'Buster';
+        =cut
+
+* Built-in Data Types
+- only three exist: scalar, array of scalar and hash of scalar
+- indexing starts at 0 and can be negative (-3). positive start at 0, negative starts at the end 
+- terms of scalar, array and hash
+    Table 2-1. Accessing scalar values
+    Construct       Meaning
+    $days           Simple scalar value $days
+    $days[28]       29th element of array @days
+    $days{"Feb"}    “Feb” value from hash %days
+
+    Table 2-2. Syntax for scalar terms
+    Construct           Meaning
+    ${days}             Same as $days but unambiguous before alphanumerics
+    $Dog::days          Different $days variable, in the Dog package
+    $#days              Last index of array @days
+    $days–>[28]         29th element of array pointed to by reference $days
+    $days[0][2]         Multidimensional array
+    $days{2000}{"Feb"}  Multidimensional hash
+    $days{2000,"Feb"}   Multidimensional hash emulation
+
+    Table 2-3. Syntax for list terms
+    Construct           Meaning
+    @days               Array containing ($days[0], $days[1], ... $days[N])
+    @days[3, 4, 5]      Array slice containing ($days[3], $days[4], $days[5])
+    @days[3..5]         Array slice containing ($days[3], $days[4], $days[5])
+    @days{"Jan","Feb"}  Hash slice containing ($days{"Jan"},$days{"Feb"})
+
+    Table 2-4. Syntax for hash terms
+    Construct   Meaning
+    %days       (Jan => 31, Feb => $leap ? 29 : 28, ...)
+
+    Example: Adding multiple values: @days = 1 .. 7;
+- Naming variales shortly explained, scopes  typeglob and lexical(my our, state). In Detail later. Try to prevent exotic names and use UPPERCASE for File Handles.
+  $PAckage::  is a Symbol Table and can access $PAckage::var wich is defined in packade without my, our, state.
+- Name Lookups
+    1. Looking in the immediately enclosing block for my, our or state declarations
+        unreachable from outside
+    2. it looks in the outer block of the enclosing block until it find one declaration or running out of blocks
+    3. if perl running out of blocks and reeaches the file which ist the largest lexical scope and will follow by 4. Any eval String will be handled as a own block and will handled like 2.
+    4. if not finding any declaration(my or our) for the variable it gives up lexically scoped variables and tries package variables. If strict pragma is in effect we got an error if there is
+       no predefined variable or imported in current package. This is because struct does not allow unqualified global names.
+       Perl repeating 1. - 3. for each package declaration which was in scope.
+    5. If no package declaraion in any surroundeding lexical scope, perl look in the unnamed top level package with "main" value
+    
+    Indirections are püossible:
+        wanna use $bert is also possible as ${ some_expression() } in cases: - some_expression return the name "bert" or a reference to $bert
+- Scalar Value
+    - can only be: string, number, reference or undef = undefined
+    - we say a scalar containing... itself is typeless
+    - strings are unlimited count of chars in perl
+    - floats has no unlimited precision: but you can increase numbers with bigin, bigrat or bignum
+        Examples:
+            % perl –E 'say 10/3 == 1/3*10 ? "Yes" : "No"'
+            No
+            
+            % perl –Mbigrat –E 'say 10/3 == 1/3*10 ? "Yes" : "No"'
+            Yes
+            
+            % perl –E 'say 4/3 * 5/12'
+            0.555555555555555
+            
+            % perl –Mbigrat –E 'say 4/3 * 5/12'
+            5/9
+
+            File Usage:
+
+            use v5.14;
+            use bigrat;
+            say 1/3 * 6/5 * 5/4; # prints "1/2"
+    - strings and numbers are interchangeable. References are a bit different: strongly typed, uncastable pointers with built in reference counting and destructor invocation
+    - Numeric Literals
+
+        my $x = 12345;          # integer
+        my $x = 12345.67;       # floating point
+        my $x = 6.02e23;        # scientific notation
+        my $x = 4_294_967_296;  # underline for legibility
+        my $x = 0377;           # octal
+        my $x = 0xffff;         # hexadecimal
+        my $x = 0b1100_0000;    # binary
+    - String Literals
+
+        Table 2-5. Backslashed character escapes
+        Code        Meaning
+        \n          Newline (usually LF)
+        \r          Carriage return (usually CR)
+        \t          Horizontal tab
+        \f          Form feed
+        \b          Backspace
+        \a          Alert (bell)
+        \e          ESC character
+        \033        ESC in octal
+        \o{33}      Also ESC in octal
+        \x7f        DEL in hexadecimal
+        \x{263a}    Character number 0x263A
+        \N{LATIN SMALL LETTER EWITH ACUTE}  The named character LATIN SMALL LETTER E WITH ACUTE, “é”, which is codepoint 0xE9 in Unicode
+        \N{ U+E9 }  Character number 0xE9 again
+        \cC         Control-C
+
+        Table 2-6. Translation escapes
+        Code Meaning
+        \u          Force next character to titlecasea
+        \l          Force next character to lowercase
+        \U          Force all following characters to uppercase; ends at \E
+        \L          Force all following characters through \E to lowercase; ends at \E
+        \F          Force all following characters through \E to foldcase;b ends at \E
+        \Q          Backslash all following nonalphanumeric characters; ends at \E
+        \E          End \U, \L, \F, or \Q
+
+        my $Price = '$100'; # not interpolated
+        print "The price is $Price.\n"; # interpolated
+
+        $days{"Feb"} => $days{Feb},     # OK
+        $days{'February 29th'}          # Ok.
+        $days{"February 29th"}          # Also ok. "" doesn't have to interpolate.
+        $days{ February 29th }          # WRONG, produces parse error.
+
+        @days{'Jan','Feb'}              # Ok.
+        @days{"Jan","Feb"}              # Also ok.
+        @days{ Jan, Feb }               # Kinda wrong (breaks under use strict)
+
+        print "\n"; # Ok, print a newline.
+        print \n ; # WRONG, no interpolative context.
+
+        Table 2-7. Quote constructs
+        Customary   Generic Meaning                 Interpolates
+        ''          q//     Literal string          No
+        ""          qq//    Literal string          Yes
+        ``          qx//    Command execution       Yes
+        ()          qw//    Word list               No
+        //          m//     Pattern match           Yes
+        s///        s///    Pattern substitution    Yes
+        tr///       y///    Character translation   No
+        ""          qr//    Regular expression      Yes
+
+        Examples:
+        my $single = q!I said, "You said, 'She said it.'"!;
+        my $double = qq(Can't we get some "good" $variable?);
+        my $chunk_of_code = q {
+            if ($condition) {
+                print "Gotcha!";
+            }
+        };
+    -Or Leave Out the Quotes Entirely (current: page 72 on AR or 72 in ebook)
+
+
