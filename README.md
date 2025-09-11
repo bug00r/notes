@@ -25,3 +25,7 @@ Collection useful links, i think :)
 * [d](https://stackoverflow.com/tags/d/info)
 * [rust](https://stackoverflow.com/tags/rust/info)
   
+## Programming Notes
+
+* [nim](nim/start.md)
+  
