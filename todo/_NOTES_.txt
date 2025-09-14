@@ -1,0 +1,43 @@
+Sammlung Von C Programmierkonstrukten
+-------------------------------------
+
+1. Flexible Array Member 
+++++++++++++++++++++++++
+(Beispiel: char array )
+Quellen: https://www.geeksforgeeks.org/flexible-array-members-structure-c/
+         https://en.wikipedia.org/wiki/Flexible_array_member
+1.1 Reguläre Implementierung in einem Struct als: char* ptrName;
+1.2 Implementierung <C99, als letzter Struct Datentyp: char name[0]; //Länge 0
+1.3 Implementierung >=C99,               "           : char name[]; // Länge nicht vorhanden
+
+In den Versionen 1.2 und 1.3 garantieren die Compiler gcc und msvc eine fortlaufende Speichernutzung, je nach Bedarf.
+Somit kann die sizeof Operation verwendet werden und gibt, je nach Inhalt des letzten Array Eintrags, eine andere Größe wieder.
+Natürlich inklisive vom Compiler verwendete Padding Bytes.
+
+2. Structure field addressing in definitions (since c99)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+struct fops {
+	int open, read, write, close;
+};
+{
+	// old span
+	struct fops f1 = { open: 0, close: 1, read: 2};
+	// new span
+	struct fops f2 = { .open=0, .close=1, .read=2}
+	};
+}
+
+3. Array initialization
++++++++++++++++++++++++
+// initializing an array of int
+int a[ 7] = { [5]=1, [2]=3, 2};
+// resulting in
+int a[ 7] = { 0, 0, 3, 2, 0, 1, 0};
+
+// initializing an array of struct
+struct { int x,y; } ar[ 4] = { [1].x=23, [3].y=34, [1].y=-1, [1].x=12};
+// resulting in
+struct { int x,y; } ar[ 4] = { { 0, 0}, { 12, -1}, { 0, 0}, { 0, 34}};
+
+// interesting usage
+char forbidden[ 256] = { ['a']=1, ['e']=1, ['i']=1, ['o']=1, ['u']=1};

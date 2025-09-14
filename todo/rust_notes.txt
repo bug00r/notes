@@ -1,0 +1,442 @@
+OwnerShip
+---------
+
+Rules:
+    - each value in Rust has a variable thats called its OwnerShip
+    - There can only be one OWNER at Time
+    - When the Owner goes out of Scope the value will be dropped.
+
+Variable Scope: 
+                //s is string literal called type: str and using the stack
+                fn main() {
+                    {                      // s is not valid here, it’s not yet declared
+                        let s = "hello";   // s is valid from this point forward
+
+                        // do stuff with s
+                    }                      // this scope is now over, and s is no longer valid
+                }
+
+                //s is Type of String and was using the Heap
+                fn main() {
+                    {
+                        let s = String::from("hello"); // s is valid from this point forward
+
+                        // do stuff with s
+                    }                                  // this scope is now over, and s is no
+                                                    // longer valid
+                }
+
+                !! If a Variable goes out of Scope, Rust calls a special function "drop" from Drop Trait.
+
+Move: on literal variables there will be made a copy and is will work.
+
+        let a = "hello world!!"; // or 4, .5 and so on => Stack Data and auto implementing Copy Trait
+        let b = a;
+        println("{}{}",a,b); //everything is fine 
+
+        Whick datatypes implementing Copy Trait?
+            
+            - All the integer types, such as u32.
+            - The Boolean type, bool, with values true and false.
+            - All the floating point types, such as f64.
+            - The character type, char.
+            - Tuples, if they only contain types that also implement Copy. For example, (i32, i32) implements Copy, but (i32, String) does not.
+
+
+     on heap allocated data this will crash by invalidity (borrow checker)
+
+        let a = String::from("hello world!!");
+        let b = a;  // no copy but move
+        println("{}{}",a,b); //borrow checker issue
+
+CLone: 
+    on heap allocated data we can call clone to get deep copy
+        
+        let s1 = String::from("hello"); //heap data
+        let s2 = s1.clone(); // deep copy tiwh calline clone()
+
+        println!("s1 = {}, s2 = {}", s1, s2); //everything is fine
+
+References:
+    - one or more references can point to an immutable variable
+    - There can only be one mutable reference to a variable, because of data race prevention wich will heppen when:
+        
+        - Two or more pointers access the same data at the same time.
+        - At least one of the pointers is being used to write to the data.
+        - There’s no mechanism being used to synchronize access to the data.
+
+    - You can have more mutable references by using scopes:
+
+        fn main() {
+            let mut s = String::from("hello");
+
+            {
+                let r1 = &mut s;
+            } // r1 goes out of scope here, so we can make a new reference with no problems.
+
+            let r2 = &mut s;
+        }
+    
+    - same Rules are enforces by using immutable and mutable references
+
+        fn main() {
+            let mut s = String::from("hello");
+
+            let r1 = &s; // no problem
+            let r2 = &s; // no problem
+            let r3 = &mut s; // BIG PROBLEM
+
+            println!("{}, {}, and {}", r1, r2, r3);
+        }
+
+    - this here is valid too, because r1 and r2 were not use after r3
+
+        fn main() {
+            let mut s = String::from("hello");
+
+            let r1 = &s; // no problem
+            let r2 = &s; // no problem
+            println!("{} and {}", r1, r2);
+            // variables r1 and r2 will not be used after this point
+
+            let r3 = &mut s; // no problem
+            println!("{}", r3);
+        }
+
+    - dangling reference protection
+
+        fn main() {
+            let reference_to_nothing = dangle();
+        }
+
+        fn dangle() -> &String { // dangle returns a reference to a String
+
+            let s = String::from("hello"); // s is a new String
+
+            &s // we return a reference to the String, s
+        } // Here, s goes out of scope, and is dropped. Its memory goes away.
+        // Danger!
+
+        SOLUTION:
+
+        fn main() {
+            let string = no_dangle();
+        }
+
+        fn no_dangle() -> String {
+            let s = String::from("hello");
+
+            s
+        }
+
+    - Rules of References
+        
+        - At any given time, you can have either one mutable reference or any number of immutable references.
+        - References must always be valid.
+
+The Slice Type:
+
+        Example: [0..5]
+        [starting_index..ending_index]
+            start_index = 0
+            ending_index = 5,one more then the last position, also 5(index 4)
+
+
+        let s = String::from("hello world");
+
+        let hello = &s[0..5];
+        let world = &s[6..11];
+
+        //starting at 0 can easier writte as:
+
+            let hello = &s[0..5];
+            
+                or
+
+            let hello = &s[..5];
+
+        //slices until the end
+            let s = String::from("hello");
+
+            let len = s.len();
+
+            let slice = &s[3..len];
+            let slice = &s[3..];
+
+        - String literals(str) are slices!!
+
+            let s = "Hello, world!"; //type of s is &str
+        
+        - String Slices as Parameters
+
+            fn first_word(s: &String) -> &str { 
+            
+            //A more experienced Rust dev would write
+            fn first_word(s: &str) -> &str
+            //because we could use the same function with &String and &str values
+
+        -!! Defining a function to take string slices instead of reference to String makes APIS more general and useful without losing functionality:
+
+            fn main() {
+                let my_string = String::from("hello world");
+
+                // `first_word` works on slices of `String`s, whether partial or whole
+                let word = first_word(&my_string[0..6]);
+                let word = first_word(&my_string[..]);
+                // `first_word` also works on references to `String`s, which are equivalent
+                // to whole slices of `String`s
+                let word = first_word(&my_string);
+
+                let my_string_literal = "hello world";
+
+                // `first_word` works on slices of string literals, whether partial or whole
+                let word = first_word(&my_string_literal[0..6]);
+                let word = first_word(&my_string_literal[..]);
+
+                // Because string literals *are* string slices already,
+                // this works too, without the slice syntax!
+                let word = first_word(my_string_literal);
+            }
+
+        - Other Slices like
+
+            #![allow(unused)]
+            fn main() {
+                let a = [1, 2, 3, 4, 5];
+
+                let slice = &a[1..3];
+
+                //This slice has the type &[i32]
+                assert_eq!(slice, &[2, 3]);
+            }
+
+
+Error handling AND The ? Operator:
+    
+    more details: https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html
+
+    - history, error handling can be implemented with Result<V,E> and match expressions in different ways
+
+        1.
+            let f = File::open("hello.txt");
+
+            let f = match f {
+                Ok(file) => file,
+                Err(error) => panic!("Problem opening the file: {:?}", error),
+            };
+
+        2.  let f = File::open("hello.txt");
+
+            let f = match f {
+                Ok(file) => file,
+                Err(error) => match error.kind() {
+                    ErrorKind::NotFound => match File::create("hello.txt") {
+                        Ok(fc) => fc,
+                        Err(e) => panic!("Problem creating the file: {:?}", e),
+                    },
+                    other_error => {
+                        panic!("Problem opening the file: {:?}", other_error)
+                    }
+                },
+            };
+
+        3. using closure: |param| { ... }
+
+            let f = File::open("hello.txt").unwrap_or_else(|error| {
+                if error.kind() == ErrorKind::NotFound {
+                    File::create("hello.txt").unwrap_or_else(|error| {
+                        panic!("Problem creating the file: {:?}", error);
+                    })
+                } else {
+                    panic!("Problem opening the file: {:?}", error);
+                }
+            });
+        
+        4. unwrap
+            let f = File::open("hello.txt").unwrap();
+        
+        5. expect
+            let f = File::open("hello.txt").expect("Failed to open hello.txt");
+
+    Ways inside of Functions
+
+        1. 
+            fn read_username_from_file() -> Result<String, io::Error> {
+                let f = File::open("hello.txt");
+
+                let mut f = match f {
+                    Ok(file) => file,
+                    Err(e) => return Err(e),
+                };
+
+                let mut s = String::new();
+
+                match f.read_to_string(&mut s) {
+                    Ok(_) => Ok(s),
+                    Err(e) => Err(e),
+                }
+            }
+
+        2. the ? Operator
+
+            2.1 
+                fn read_username_from_file() -> Result<String, io::Error> {
+                    let mut f = File::open("hello.txt")?;
+                    let mut s = String::new();
+                    f.read_to_string(&mut s)?;
+                    Ok(s)
+                }
+            
+            2.2 
+                fn read_username_from_file() -> Result<String, io::Error> {
+                    let mut s = String::new();
+
+                    //if file open returns Ok(v) ? will unwrap and value for continue work
+                    //if file open returns Error, ? will call "from" function from "From" Trait to convert given error to returning error  
+                    File::open("hello.txt")?.read_to_string(&mut s)?;
+
+                    Ok(s)
+                }
+            
+            2.3 (without ? but with fs)
+                
+                fn read_username_from_file() -> Result<String, io::Error> {
+                    fs::read_to_string("hello.txt")
+                }
+
+            2.4 the ? Operator can only be used in Functions
+
+                - this won't work
+
+                    fn main() {
+                        let f = File::open("hello.txt")?;
+                    }
+                
+                - We can use the ? Operator in Result<V,E> and Option<V>
+
+            2.5 the ? Operator with Option<V>
+
+                //if text is an empty string next() will return None and ? returns None
+                //if text is not empty ? will extract the string slice and we can call chars on it
+                fn last_char_of_first_line(text: &str) -> Option<char> {
+                    text.lines().next()?.chars().last()
+                }
+            
+            2.6 In 2.4 main has () return value per default, Rusts main method also returning return vlaues from main like C 
+                
+                - This main method returns () and rust returns a 0 to the OS based on that.
+                
+                    fn main() {
+                        println!("blubb");
+                     }
+
+                - you can set main return error values with
+
+                     fn main() {
+                        std::os::set_exit_status(1);    
+                    } 
+                    
+                - since Rust 1.26 you can use
+
+                    use std::error::Error;
+                    use std::fs::File;
+
+                    fn main() -> Result<(), Box<dyn Error>> {
+                        let f = File::open("hello.txt")?;
+
+                        Ok(())
+                    }
+
+- Allocating Data on the Heap with Box<T> Trait 
+- Reference counting smart_pointer Rc<T> with strong OwnerShip
+- Since Rc<T> in case of parent child usage which refers to each other THIS CALLED cycled references and caused MEMORY LEAK.
+
+    - instead of Rc<T>::clone() you should use Rc<T>::downgrade(). This gives you a Weak<T> smart_pointer. internally it counts 
+      weak reference counts. But its not preventing that children will be deleted by not anymore existing parents.
+    - if you want to use a Weak<T> Value, you have to call Weak<T>::upgrade(), which returns and Option<Rc<T>>. In this case,
+      if parent still exist it returns a Some<T> oterwise a None.
+
+- Trait Objects
+    - Can be used to have collections who implements a special trait:
+        - But this is only possible if every Trait object is Object Safe. Object safety is explained by example here:
+
+            https://doc.rust-lang.org/reference/items/traits.html#object-safety
+
+        //Example as ui lib components example:
+
+        pub trait Draw
+        {
+            fn draw(&self);
+        }
+
+        pub struct Screen
+        {
+            pub components: Vec<Box<dyn Draw>>,
+        }
+
+        impl Screen
+        {
+            pub fn run(&self)
+            {
+                for component in self.components.iter()
+                {
+                    component.draw();
+                }
+            }
+        }
+
+        pub struct Button
+        {
+            pub width: u32,
+            pub height: u32,
+            pub label: String,
+        }
+
+        impl Draw for Button
+        {
+            fn draw(&self)
+            {
+                println!("drawing Button...");
+            }
+        }
+
+        struct SelectBox
+        {
+            width: u32,
+            height: u32,
+            options: Vec<String>,
+        }
+
+        impl Draw for SelectBox
+        {
+            fn draw(&self)
+            {
+                println!("drawing SelectBox ...");
+            }
+        }
+
+        fn main() {
+
+            let screen = Screen {
+                components: vec![
+                    Box::new(SelectBox {
+                        width: 75,
+                        height: 10,
+                        options: vec![
+                            "yes".to_string(),
+                            "maybe".to_string(),
+                            "no".to_string(),
+                        ],
+                    }),
+                    Box::new(Button {
+                        width: 50,
+                        height: 10,
+                        label: "OK".to_string(),
+                    }),
+                ],
+            };
+
+            screen.run();
+
+        }
+

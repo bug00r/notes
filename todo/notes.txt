@@ -1,0 +1,1227 @@
+FAQ:
+
+1. Uplevel?
+	https://www.tcl.tk/man/tcl8.4/TclCmd/uplevel.html
+
+2. upvar?
+	https://www.tcl.tk/man/tcl8.4/TclCmd/upvar.html
+
+
+Language:
+
+1. String output: puts (Every single puts created a newline, if no command parameter -nonewline was set)
+		puts "blabla"
+		puts {bla bla} ;# String quoting with braces
+		
+		#This results in Hello, World because of -nonewline
+		puts -nonewline Hello,
+		puts World
+
+2. Variables: set name value; name can myarray(index)  arrays are assotiative 
+
+	Note: The set command returns the new value
+
+	set x 2  ;#sets x with value 2
+
+	set y $x ;#sets y with value x
+
+	set z [expr $x+$y ]
+	set z [expr {$x + $y} ];# Braces are needed if expression conatining whitespaces
+
+3. Grouping and substitution during Command Evaluation: 
+		
+		"..." ;# Allows substitution and Grouping
+		{...} ;# Does not allow Substitution
+
+		#Subcommand evaluation with [...]
+		set x abc
+		set y [set x "def"]; # x and y are "def because set returns new value and [] first interpret ersult of inner command"
+
+		details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+5
+
+4. Math 101
+
+	Command for mathematic calc is: expr
+	often used in: if, while, for
+
+	Performance tip: enclosing the arguments to expr in curly braces will result in faster code. So do expr {$i * 10} instead of simply expr $i * 10. 
+					 It is also safer, as illustrated at the end of this lesson
+
+	Operands will be interpret as possible, normally as integer or double. Others like 
+					0b as binary 
+					0o as octal
+					0x as HEx value
+
+	Operands may be specified in any of the following ways:
+		As a numeric value, either integer or floating-point.
+		As strings enclosed in double quotes.
+		As a boolean (logical) value in one of the following forms: 1 or 0, true or false, yes or no, on or off.
+		As a Tcl variable, using standard $ notation. The variable's value will be used as the operand.
+
+	The above mathematical functions and operators also exist as independent commands:
+
+		% expr {sqrt(4)}			;#2.0
+		% ::tcl::mathfunc::sqrt 4   ;# sqrt lives in a separate "namespace",
+		%                            # "::tcl::mathfunc"
+
+	Type Conversions:
+
+		double int wide entier
+
+		    double() 	converts a number to a double-precision floating-point number.
+    		int() 		converts a number to an ordinary integer number (by truncating the decimal part).
+    		wide() 		converts a number to a so-called wide integer number (these numbers have a larger range).
+    		entier() 	coerces a number to an integer of appropriate size to hold it without truncation. 
+					 	This might return the same as int() or wide() or an integer of arbitrary size (in Tcl 8.5 and above).
+
+	Bracing your expressions
+
+		Consider the following commands:
+
+		% set userinput {[puts DANGER!]}
+		[puts DANGER!]
+		% expr $userinput == 1
+		DANGER!
+		0
+		% expr {$userinput == 1}
+		0
+
+
+	Details of Math: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+6
+
+
+5. numerical comparision: 
+
+	If: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+7
+
+	    if {expr1} ?then? {
+        	body1
+		} elseif {expr2} ?then? {
+			body2
+		} elseif {
+			...
+		} else {
+			bodyN
+		}
+
+	switch: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+8
+
+		options could be:
+			glob-style pattern matching (default: using * Wildcard) 
+			-exact (exact value of string)
+			-regex (regex 101: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+20 )
+
+		switch ?options? string {
+			pattern1 {
+				body1
+			}
+			?pattern2 {
+				body2
+			}?
+			...
+			?patternN {
+				bodyN
+			}?
+		}
+
+
+		set string "a"
+		switch $string {
+			"a" -
+			"b" {
+				puts "Using the body for pattern 'b' for both a and b"
+			}
+			default {
+				puts blabla
+			}
+		}
+
+		#TRY TO USE pattern from Variable:
+
+		NOT WORKING:
+			set x ONE
+			set y 1
+			set z ONE
+
+			# Note that patterns are not subject to substitutions if
+			# contained in braces
+
+			switch $x {
+				$z {
+					set y1 [expr {$y+1}]
+					puts "MATCH \$z. $y + $z is $y1"
+				}
+				ONE {
+					set y1 [expr {$y+1}]
+					puts "MATCH ONE. $y + one is $y1"
+				}
+				TWO {
+					set y1 [expr {$y+2}]
+					puts "MATCH TWO. $y + two is $y1"
+				}
+				THREE {
+					set y1 [expr {$y+3}]
+					puts "MATCH THREE. $y + three is $y1"
+				}
+				default {
+					puts "$x is NOT A MATCH"
+				}
+			}
+
+		WORKING:
+			set x ONE
+			set y 1
+			set z ONE
+
+			switch $x\
+				$z {
+					set y1 [expr {$y+1}]
+					puts "MATCH \$z. $y + $z is $y1"
+				}\
+				ONE {
+					set y1 [expr {$y+1}]
+					puts "MATCH ONE. $y + one is $y1"
+				}\
+				TWO {
+					set y1 [expr {$y+2}]
+					puts "MATCH TWO. $y + two is $y1"
+				}\
+				THREE {
+					set y1 [expr {$y+3}]
+					puts "MATCH THREE. $y + three is $y1"
+				}\
+				default {
+					puts "$x is NOT A MATCH"
+				}
+
+6. While Loop
+
+	while test {
+		body
+	}
+
+	Example 1:
+
+		set x 1
+
+		# This is a normal way to write a Tcl while loop.
+
+		while {$x < 5} {
+			puts "x is $x"
+			set x [expr {$x + 1}]
+		}
+
+		puts "exited first loop with X equal to $x\n"
+
+	Example 2:
+
+		# The next example shows the difference between ".." and {...}
+		# How many times does the following loop run?  Why does it not
+		# print on each pass?
+
+		set x 0
+		while "$x < 5" {
+			set x [expr {$x + 1}]
+			if {$x > 7} break
+			if "$x > 3" continue
+			puts "x is $x"
+		}
+
+	puts "exited second loop with X equal to $x"
+
+7. For and incr
+
+	for start test next body
+
+	Example:
+		for {set i 0} {$i < 10} {incr i} {
+			puts "I inside first loop: $i"
+		}
+
+		for {set i 3} {$i < 2} {incr i} {
+			puts "I inside second loop: $i"
+		}
+
+		puts "Start"
+		set i 0
+		while {$i < 10} {
+			puts "I inside third loop: $i"
+			incr i
+			puts "I after incr: $i"
+		}
+
+		set i 0
+		incr i
+		# This is equivalent to:
+		set i [expr {$i + 1}]
+
+8. Adding new commands to Tcl - proc
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+11
+
+	syntax:  proc name arguments body
+
+	Example:
+
+		proc sum {arg1 arg2} {
+			set x [expr {$arg1 + $arg2}];
+			return $x
+		}
+
+		puts " The sum of 2 + 3 is: [sum 2 3]\n\n"
+
+	Advanced usage:
+
+		As an aside, it is possible to redefine any builtin command or procedure. This is useful for instance for debugging purposes, although there are other means for this as well. As a simple demonstration:
+
+		proc for {a b c} {
+			puts "The for command has been replaced by a puts";
+			puts "The arguments were: $a\n$b\n$c\n"
+		}
+
+		for {set i 1} {$i < 10} {incr i}
+	
+	proc with default values:
+
+		proc justdoit {a {b 1} {c -1}} {
+			...
+		}
+
+		examples:	justdoit 10 ;# sets a=10 b=1 c=-1
+					justdoit 10 20 ;# sets a=10 b=20 c=-1
+					justdoit 10 20 30;# sets a=10 b=20 c=30
+
+	proc with variable count of arguments: the Name of parameter must be "args" and has to be on the last
+
+		proc show_a_list {args} {
+			set n 0
+			foreach arg $args {
+				puts "Argument $n: $arg"
+				incr n
+			}
+		}
+
+		show_a_list A B C D
+		puts ""
+		show_a_list E F
+
+		NOTE: Note that if there is a variable other than args after a variable with a default, 
+			  then the default will never be used. For example, if you declare a proc such as:
+
+				proc function { a {b 1} c} {...} ;#you will always have to call it with 3 arguments.
+
+		Example: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+12
+
+9. Variable scope - global and upvar
+
+	global: acces to global scope
+
+		Example:
+			global logFile
+			set logFile [open "log.out" w]
+
+			proc writeLog {data} {
+				global logFile
+
+				puts $logFile "LOG: $data"
+			}
+
+	upvar: The upvar command can be used to pass variables "by reference":
+
+		Example:
+
+			proc SetPositive {variable value } {
+				upvar 1 $variable myvar
+				if {$value < 0} {
+					set myvar [expr {-$value}]
+				} else {
+					set myvar $value
+				}
+				return $myvar
+
+				# Or more concisely:
+				# set myvar [expr {abs($myvar)}]
+			}
+
+			SetPositive x 5
+			SetPositive y -5
+
+			puts "X : $x    Y: $y\n";# X : 5    Y: 5
+
+9. Data structures 101
+
+9.1 The list 
+
+	Way to create a list:
+
+		1. list of values: 			set lst {{item 1} {item 2} {item 3}}
+		2. With the split command:	set lst [split "item 1.item 2.item 3" "."]
+		3. With the list command:	set lst [list "item 1" "item 2" "item 3"]
+
+	Details: https://www.tcl-lang.org/man/tcl/TclCmd/list.htm
+			 https://wiki.tcl-lang.org/page/list
+
+	Ways ot Iteration:
+
+		1. foreach varName list body
+		2. foreach {a b} $listofpairs { ... }
+		3. foreach a $listOfA b $listOfB {...}
+		4. foreach {a b} $listOfAB {...}
+
+	Nested lists:
+		set nestedList { {1 2 3} {A B C D} {xyz 33 1A} }
+
+		puts "The last element from the second sublist is:"
+		puts "    [lindex $nestedList 1 end]"
+
+		result: The last element from the second sublist is: D
+
+10. Simple pattern matching - "globbing"
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+16a
+
+	there is a glob command for searching diles and directories:
+
+	Examples:
+		# Matches
+		string match f* foo
+
+		# Matches
+		string match f?? foo
+
+		# Doesn't match
+		string match f foo
+
+		# Returns a big list of files on my Debian system.
+		set bins [glob /usr/bin/*]
+
+11. String Subcommands
+
+	string length str ;#Returns the length of str.
+
+	string index str i ;#Returns the i'th character from str.
+
+	string range str first last ;#Returns a string composed of the characters from first to last taken from str.
+
+	Examples:
+
+		set string "this is my test string"
+
+		puts "There are [string length $string] characters in \"$string\""
+
+		puts "[string index $string 1] is the second character in \"$string\""
+		puts "Second character in \"$string\" is [string index $string 1]"
+
+		puts "Substring from 5th to 10th: \"[string range $string 5 10]\""
+
+	String comparisons - compare match first last wordend:	https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+18
+	Modifying Strings - tolower, toupper, trim, format:		https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+19
+
+12. Regex
+
+	Available as:
+		1. -regex switch in different commands
+		2. Command "regexp" for Searching. Withing Variables for holding matches
+		3. Command "regsub" For String search and replacement.
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+20
+			 https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+20a
+			 https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+21
+
+13. Associative Arrays
+
+	Details:	https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+22
+				https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+23
+
+14. Dictionaries as alternative to arrays
+
+	Tcl arrays are collections of variables, rather than values. This has advantages in some situations (e.g., you can use variable traces on them), 
+	but also has a number of drawbacks:
+
+    1. They cannot be passed directly to a procedure as a value. Instead you have to use the array get and array set commands to convert them to a value and back again, 
+	   or else use the upvar command to create an alias of the array.
+    2. Multidimensional arrays (that is, arrays whose index consists of two or more parts) have to be emulated with constructions, using element names with commas for instance. 
+	   The comma used here is not a special piece of syntax, but instead just part of the string key. In other words, we are using a one-dimensional array, with keys like "foo,2" and "bar,3". This is quite possible, but it can become very clumsy (there can be no intervening spaces for instance).
+
+		set array(foo,2) 10
+ 		set array(bar,3) 11
+	3. Arrays cannot be included in other data structures, such as lists, or sent over a communications channel, without first packing and unpacking them into a string value.
+
+
+	the Alternative is the "dict" command:
+
+		1. dicts are pure Values
+		2. you can pass them to procedures just as list or string without the need of dict
+		3. dicts can include other dicts unlike arrays 
+		4. Creating more complex structrures like: lists od dicts who includes lists of dicts
+
+	Details and ExampleS: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+23a
+
+15. File Access
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+24
+
+	Infos about Files: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+25
+
+	Example:
+		#
+		# Count the number of lines in a text file
+		#
+		set infile [open "myfile.txt" r]
+		set number 0
+
+		#
+		# gets with two arguments returns the length of the line,
+		# -1 if the end of the file is found
+		# and, in this case, places the line of input into a
+		# variable named "line".
+		#
+		while { [gets $infile line] >= 0 } {
+			incr number
+		}
+		close $infile
+
+		puts "Number of lines: $number"
+
+		#
+		# Also report it in an external file
+		#
+		set outfile [open "report.out" w]
+		puts $outfile "Number of lines: $number"
+		close $outfile
+
+16. Running other programs from Tcl - exec, open
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+26
+
+    open - run a new program and open a file-like connection to this program.
+    exec - run a new program as a more or less independent subprocess
+
+17. Learning the existence of commands and variables - info
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+27
+
+	Example:
+
+		proc nitpickyIncr {val {amount 1}} {
+			upvar $val v
+			if { [info exists v] } {
+				incr v $amount
+			}  else {
+				return -code error "Variable $val does not exist!"
+			}
+		}
+
+	Informations about Interpreter:
+
+		Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+28
+
+	Infos about procs: 
+	
+		Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+29
+
+18. Modularizatio
+
+	Important for building reusable libs: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+31
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+30
+
+	* Packages and Namespaces: better than source
+
+		Using: package require xyz 
+
+		The Interpreter will build a database during first usage of "package require". It will went through all Directories and subdirs of them are located in:
+
+			#global var "auto_path" or listed in tcl_pkgPath
+			# see path:
+			% puts $auto_path
+			c:/dev/lib/tcl8.6 c:/dev/lib
+
+		Each Package provides an File named "pkgIndex.tcl"
+
+		Details: here https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+31
+
+			Creating a package
+
+			There are three steps involved in creating a package:
+
+				Adding a package provide statement to your script.
+				Creating a pkgIndex.tcl file (note the capital-I, this is essential for OSes like Linux)
+				Installing the package where it can be found by Tcl.
+
+			Simplest way to create a pkgIndex.tcl is the pkg_mkIndex Command
+
+			Example of pkgIndex.tcl 
+
+				# pkgIndex.tcl to use tkcon as a package via 'package require tkcon'
+				#
+				# 'tkcon show' will do all that is necessary to display tkcon
+				#
+				# Defaults to:
+				#  * the main interp as the "slave"
+				#  * hiding tkcon when you click in the titlebar [X]
+				#  * using '.tkcon' as the root toplevel
+				#  * not displaying itself at 'package require' time
+				#
+				package ifneeded tkcon 2.7 [list source [file join $dir tkcon.tcl]]
+
+		* Namespaces: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+31
+
+19. Create commands
+
+	details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+32
+
+	Using eval: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+32
+
+	More command construction: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+33
+
+	Some useful commands for building commands:
+
+		subst: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+34
+
+20. Debugging and Errors - errorInfo errorCode catch error return
+
+	If command or proc causes error, then the variable errorInfo is set
+
+	Error commands:
+
+		error message ?info? ?code?
+			Generates an error condition and forces the Tcl call stack to unwind, with error information being added at each step. 
+			If info or code are provided, the errorInfo and errorCode variables are initialized with these values.
+
+		catch script ?varName?
+			Evaluates and executes script. The return value of catch is the status return of the Tcl interpreter after it executes 
+			script If there are no errors in script, this value is 0. Otherwise it is 1. If varName is supplied, the value returned 
+			by script is placed in varName if the script successfully executes. If not, the error is placed in varName.
+
+		return ?-code code? ?-errorinfo info? ?-errorcode errorcode? ?value?
+			Generates a return exception condition. The possible arguments are:
+
+				-code code 	The next value specifies the return status.
+							code must be one of the following words:
+								ok - Normal status return
+								error 		- Proc returns error status
+								return 		- Normal return
+								break 		- Proc returns break status
+								continue 	- Proc returns continue status
+											  These allow you to write procedures that behave
+											  like the built in commands break, error, and continue.
+				-errorinfo info			info will be the first string in the errorInfo variable.
+				-errorcode errorcode	The proc will set errorCode to errorcode.
+				value 					The string value will be the value returned by this proc.
+
+
+		errorInfo
+    		errorInfo is a global variable that contains the error information from commands that have failed.
+
+		errorCode
+    		errorCode is a global variable that contains the error code from command that failed. This is meant 
+			to be in a format that is easy to parse with a script, so that Tcl scripts can examine the contents 
+			of this variable, and decide what to do accordingly.
+
+		Examples: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+36
+
+21. Debugging - trace
+
+	The Ability to trace variables, commands and executions: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+37
+
+20. Sockets, FileEvent, vwait
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+40
+
+21. time and Date:
+
+	Details: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+41
+
+22. More Channel I/O, fblocked and fconfigure
+
+	Non blocking io and so on: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+42
+
+23. Building and distributing applications
+
+	https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+APP
+
+24. OOP 
+
+	- creating a class:
+
+		%> oo::class create Account;# create a class Account, In detail it is acommand with name "Account" in global Namespaces
+
+		creating a class in a different Namespace:	
+
+		%> oo::class create bank::Account;# creates a "class" into Namespace "bank"
+
+			or
+
+		%> namespace eval bank {oo::class create Account}
+
+		a class without definition is empty
+
+		A class definition can be add in two ways:
+
+			%> oo::class create CLASSNAME DEFINITIONSCRIPT
+
+				or
+
+			%> oo::class create CLASSNAME
+			%> oo::define CLASSNAME DEFINITIONSCRIPT
+
+	- destroying Classes
+
+		%> Account destroy
+
+		This will erase
+
+			- the definition of the Account class,
+			- any classes that inherit from, or mixin, the Account class
+			- all objects belonging to all destroyed classes.
+
+	- defining Data Members
+
+		- possible over a complete create Class Definition Script or
+
+			Creating two Members in CamelCase for avoiding naming conflicts with methods with "oo::define" command
+			
+			# Class per-object variables. Both are visible within all methods of the class
+			# Note: variable in Class DEfinition Scopt has another meaning as the command with name "variable"
+			
+			%> oo::define Account {
+				variable AccountNumber Balance
+			}
+	
+	- defining methods
+
+		Example:
+
+			oo::define Account {
+				method UpdateBalance {change} {
+					set Balance [+ $Balance $change]
+					return $Balance
+				}
+				method balance {} { return $Balance }
+				method withdraw {amount} {
+					return [my UpdateBalance -$amount]
+				}
+				method deposit {amount} {
+					return [my UpdateBalance $amount]
+				}
+			}
+
+		- definition like procs, but with "method" command
+		- a Method runs in Objects Namespace.
+			- access to Variables defined with "variable" command can accessed without any qualifiers.
+		- The Method Context makes some commands Available like: "self", "next" and "my".
+			- "my" to reffereing a method ob Object  
+		- Method Visibility
+			- Methods starting with lowerCase chars are exported and usable from Outside
+			- Methods starting with Uppercase chars are not exported
+
+			- Changing visibility in oo::define class definition script
+
+				- This will make an private Method called "UpdateBalance" public
+				
+					%> oo::define Account  {export UpdateBalance}
+				
+				- This will revert the public visibility
+
+					%> oo::define Account {unexport UpdateBalance}
+	
+	- deleting Methods with "deletemethod" command
+
+		- you can delete methods in classes(rarly used) or in objects
+
+			%> oo::define Account {deletemethod deposit}
+
+	- Constructor and Destructor 
+
+		- optional, in absence there will be created empty ones
+
+		Example:
+
+			oo::define Account {
+				constructor {account_no} {
+					puts "Reading account data for $account_no from database"
+					set AccountNumber $account_no
+					set Balance 1000000
+				}
+				destructor {  1
+					puts "[self] saving account data to database"
+				}
+			}
+
+	- The Unknown Method
+
+		- method will be called if no method is available which schould be called.
+		- default implementation is inherited by all objects from root oo::object
+
+		Definition:
+
+			oo::define CLASSNAME {
+				method unknown {target_method args} {…​implementation…​}
+			}
+
+		Example:	TWAPI
+
+			oo::define COMWrapper {
+				method unknown {method_name args} {
+					set method_index [COMlookup $method_name]
+					if {$method_index < 0} {
+						error "Method $method_name not found."
+					}
+					return [my ComCall $method_index {*}$args]
+				}
+			}
+
+	- Modifying an existing Class
+
+		- every Object will take note about changes of a Class. So this should be handled carefully.
+		- adding methods are not much a problem.
+		- replacing existing methods should be carefully => Logging Wrapper
+		- Changing Constructor will caused into trouble if the change is not downward compatible
+
+25. Working on Objects 
+
+	Details: https://www.magicsplat.com/articles/oo.html
+
+	1. Creating an Object
+
+		- two commands are available: "create" and "new"
+		- Difference:
+
+			New: Method generates a Name for created Object
+
+				% set acct [Account new 3-14159265]
+				→ Reading account data for 3-14159265 from database
+					::oo::Obj70
+
+			create: Creates an Object with specific Name
+
+				% Account create smith_account 2-71828182
+				→ Reading account data for 2-71828182 from database
+					::smith_account
+
+		- Created Objects are TCL Commands, and as such can be created in any Namespace
+
+			% namespace eval my_ns {Account create my_account 1-11111111}
+			→ Reading account data for 1-11111111 from database
+				::my_ns::my_account
+
+			% Account create my_ns::another_account 2-22222222
+			→ Reading account data for 2-22222222 from database
+				::my_ns::another_account
+
+			Note that my_account and my_ns::my_account are two distinct objects.
+
+	2. Destroying Objects
+
+		- Objects in TCL are not Garbage collected
+		- Objects can only destroced by calling built in "destroy" Method, This also runs objects destructor Method
+
+			% my_ns::my_account destroy
+			→ ::my_ns::my_account saving account data to database
+
+			Any operation on a destroyed Object will result in an error
+
+			% my_ns::my_account balance
+			Ø invalid command name "my_ns::my_account"
+
+		- Objects are also destroyed when its class or containing Namespace is destroyed.
+
+			% namespace delete my_ns
+			→ ::my_ns::another_account saving account data to database
+			% my_ns::another_account balance
+			Ø invalid command name "my_ns::another_account"
+	
+	3. Invoking Methods
+
+		Syntax: 
+				OBJECT METHODNAME args…​.
+
+		- Form of outside avoking methods:
+
+			% $acct balance
+			→ 1000000
+			% $acct deposit 1000
+			→ 1001000
+
+	4. Accessing Data Members
+
+		- However, Tcl being Tcl, it is always possible to add a variable access capability using the fact that each object has a private namespace 
+		  that can be retrieved through introspection. Thus,
+
+		  	% set [info object namespace $acct]::Balance 5000
+			→ 5000
+			% $acct balance
+			→ 5000
+
+		This practice breaks encapsulation and is not recommended
+
+		A good alternative is to automatically define accessor methods for public variables without the programmer 
+		having to explicitly do so. One such implementation is described in the Lifecycle Object Generators paper.
+
+26. Inheritance
+
+	oo::class create SavingsAccount {
+		superclass Account
+		variable MaxPerMonthWithdrawals WithdrawalsThisMonth
+		constructor {account_no {max_withdrawals_per_month 3}} {
+			next $account_no
+			set MaxPerMonthWithdrawals $max_withdrawals_per_month
+		}
+		method monthly_update {} {
+			my variable Balance
+			my deposit [format %.2f [* $Balance 0.005]] 1
+			set WithdrawalsThisMonth 0
+		}
+		method withdraw {amount} {
+			if {[incr WithdrawalsThisMonth] > $MaxPerMonthWithdrawals} {
+				error "You are only allowed $MaxPerMonthWithdrawals withdrawals a \
+					month"
+			}
+			next $amount
+		}
+	}
+	oo::class create CheckingAccount {
+		superclass Account
+		method cash_check {payee amount} {
+			my withdraw $amount
+			puts "Writing a check to $payee for $amount" 2
+		}
+	}
+	→ ::CheckingAccount
+
+	The superclass command in the class definition establishes that SavingsAccount and CheckingAccount inherit from Account. 
+	This statement by itself means they will behave exactly like the Account class, with the same methods and variables defined. 
+	Further declarations will extend or modify the class behaviour.
+
+	- Methods in derived classes
+
+		Command "next":Calling the same Method of Base Class. Note that next may be called at any point in the method, 
+		not necessarily in the beginning or the end.
+
+	-  Data members in derived classes
+
+		- Derived Classes can define new data members using "variable" in class definition or "my variable" within a method.
+		- be carefully with Name collosion, because Data Members are always defined in namespacec an can have different
+		  values.
+		- using a direct REference with "my variable Balance" would crack the data encapsylation. Better to use the public
+		  interface if the parent class like: "my deposit [format %.2f [* [my balance] $rate]]".
+
+		  (Note from ME: Reference using is fine if you know what you do)
+
+		Examples:
+
+			% SavingsAccount create savings S-12345678 2
+			→ Reading account data for S-12345678 from database
+			::savings
+			% CheckingAccount create checking C-12345678
+			→ Reading account data for C-12345678 from database
+			::checking
+			% savings withdraw 1000
+			→ 999000
+			% savings withdraw 1000
+			→ 998000
+			% savings withdraw 1000 1
+			Ø You are only allowed 2 withdrawals a month
+			% savings monthly_update
+			→ 0
+			% checking cash_check Payee 500 2
+			→ Writing a check to Payee for 500
+			% savings cash_check Payee 500 3
+			Ø unknown method "cash_check": must be balance, deposit, destroy, monthly_updat...
+
+	- Multiple Inheritance
+
+		Syntax: 
+					oo::class create CashManagementAccount {
+						superclass CheckingAccount BrokerageAccount
+					}
+					→ ::CashManagementAccount
+			
+			!!!!Be careful when using multiple superclass statements as the earlier declarations 
+			are overwritten by default. You need to specify the -append option in that case. 
+			See the Tcl documentation for the oo::define command for details. 
+
+		% CashManagementAccount create cma CMA-00000001
+		→ Reading account data for CMA-00000001 from database
+		::cma
+		% cma cash_check Payee 500
+		→ Writing a check to Payee for 500
+		% cma buy GOOG 100
+		→ Buy high
+
+27. Specializing Objects
+
+	Specialization is done through the oo::objdefine command which is analogous to the oo::define 
+	command for classes except that it takes an object instead of a class. Most of the special commands 
+	like method and variable that we have seen used inside oo::define scripts can also be used inside 
+	the script passed to oo::objdefine.
+
+	Example: Freezing Accounts
+
+		proc freeze {account_obj} {
+			oo::objdefine $account_obj {
+				method UpdateBalance {args} {
+					error "Account is frozen. Don't mess with the IRS, dude!"
+				}
+				method unfreeze {} {
+					oo::objdefine [self] { deletemethod UpdateBalance unfreeze }
+				}
+			}
+		}
+
+		- The Command "self" returned the Name of the Object.
+		- Although not required in our example, it should be noted that variables defined in the 
+		  class are not automatically visible in object-specific methods. They need to be brought 
+		  into scope with the my variable statement.
+		- the deletemethod command only affect the object specific overrides, NOT the Class based
+
+	- Changing an Objects Class 
+
+		Creating Account
+
+			% set acct [SavingsAccount new C-12345678]
+			→ Reading account data for C-12345678 from database
+			::oo::Obj81
+			% $acct monthly_update
+			→ 0
+
+		So far so good. Let us attempt to cash a check.
+
+			% $acct cash_check Payee 100
+			Ø unknown method "cash_check": must be balance, deposit, destroy, monthly_updat...
+
+		Naturally that fails because it is not a checking account. Not a problem, we can fix that by morphing the object to a CheckingAccount.
+
+			% oo::objdefine $acct class CheckingAccount
+
+		We can now cash checks successfully
+
+			% $acct cash_check Payee 100
+			→ Writing a check to Payee for 100
+
+		but monthly updates no longer work as the account is no longer a SavingsAccount.
+
+			% $acct monthly_update
+			Ø unknown method "monthly_update": must be balance, cash_check, deposit, destro...
+			% $acct destroy
+			→ ::oo::Obj81 saving account data to database
+
+
+		Note the optional form of the oo::objdefine command that we have used in the above code fragment. 
+		When the script passed to oo::define or oo::objdefine contains only one command, it can be directly 
+		specified as additional arguments to oo::define or oo::objdefine. 
+
+28. Mixins
+
+	Details: https://www.magicsplat.com/articles/oo.html#sect_oo_mixins
+
+	In TclOO a mixin is a Class and can be used as extended feature or capability
+
+	Create Mixin Class:
+
+		oo::class create EFT {
+			method transfer_in {from_account amount} {
+				puts "Pretending $amount received from $from_account"
+				my deposit $amount
+			}
+			method transfer_out {to_account amount} {
+				my withdraw $amount
+				puts "Pretending $amount sent to $to_account"
+			}
+		}
+
+	Adding mixin to Other Class:
+
+		% oo::define CheckingAccount {mixin EFT}
+		% checking transfer_out 0-12345678 100
+		→ Pretending 100 sent to 0-12345678
+		% checking balance
+		→ 999400
+
+	Adding mixin only to other Object:
+
+		% oo::objdefine savings {mixin EFT}
+		% savings transfer_in 0-12345678 100
+		→ Pretending 100 received from 0-12345678
+		1003090.0
+		% savings balance
+		→ 1003090.0
+
+	Multiple Mixin:
+
+		Single Statement: %> oo::define CheckingAccount {mixin BillPay EFT}
+		Multiple Statement: 
+
+				#We have to use --append, Otherwise the first mixin EFT would be replaced/overwridden
+				oo::define CheckingAccount {
+					mixin EFT
+					mixin -append BillPay
+				}
+
+29. Filter Methods
+
+	- Can be used as Log Mechanism too or Filterings things.
+	- every filter will be called first on each method call on Objects, internal calls too.
+	- Tips:
+		- Stack Level in Logger with command: "info level" (see example)
+		- Examine a Method the caller wants to execute: "self target" (see example).
+		  With this target it's possible to filter the Logger based on wanted method calls.
+	- Filter can be defined on Object and Classes as Mixin
+	- Multiple filters may present and chained like other method
+	- Filtermethods can be public or private. A Logger Filter should be private(Uppercase Letter starting like: "Log" not "log"(will be exported))
+	- Filtermethods are defined with var args (proc Log args)
+	- Filtermethods normally passes the call to the Target with command "next" => next {*}$args 
+	  {*}$args is argument expansion
+	- Filtermethods are bypassed when invoking c'tor, d'tor or unknown method 
+
+	Defining a Filter on Object:
+
+		oo::objdefine smith_account {
+			method Log args {
+				my variable AccountNumber
+				puts "Log([info level]): $AccountNumber [self target]: $args"
+				return [next {*}$args]
+			}
+			filter Log
+		}
+
+		Example call:
+
+			% smith_account deposit 100
+			→ Log(1): 2-71828182 ::Account deposit: 100
+			Log(2): 2-71828182 ::Account UpdateBalance: 100
+			999900
+
+	Removing Filter:
+
+		% oo::objdefine smith_account {
+			filter -clear		;# 	Note -clear option to clear any currently defined filters
+			deletemethod Log
+		}
+
+	Defining a filter as Class, in this case as Logger Class:
+
+		% oo::class create Logger {
+			method Log args {
+				my variable AccountNumber
+				puts "Log([info level]): $AccountNumber [self target]: $args"
+				return [next {*}$args]
+			}
+		}
+
+	Adding Filter / Logger Class to Object
+
+		% oo::objdefine smith_account {
+			mixin Logger
+			filter Log
+		}
+		% smith_account withdraw 500
+		→ Log(1): 2-71828182 ::Account withdraw: 500
+		Log(2): 2-71828182 ::Account UpdateBalance: -500
+		999400
+
+30. Method Chains
+
+	
+
+How TOS:
+
+
+- Commandline arguments and env Vars: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+38
+- creating procs with options like (-bla): https://stackoverflow.com/questions/31110082/how-to-create-tcl-proc-with-hyphen-flag-arguments
+											Others: https://wiki.tcl-lang.org/page/Named+arguments
+
+- Changing directories: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+35
+- Profiling: Command time to check how long a proc or script needs to be executed: https://wiki.tcl-lang.org/page/Tcl+Tutorial+Lesson+39
+
+- Shifting pointers / Handles between C and tcl code:
+		0. FAVORITE: passing c pointer as long value
+			Thats for non multithreaded parts only in simple apps
+		0.a: ALSO very good: https://wiki.tcl-lang.org/page/Tcl+Handles
+			Ref To:https://wiki.tcl-lang.org/page/Blessed+Tcl%5FObj+Values
+			       https://wiki.tcl-lang.org/page/Creating+and+Using+Tcl+Handles+in+C+Extensions
+		1.Option: https://wiki.tcl-lang.org/page/Creating+and+Using+Tcl+Handles+in+C+Extensions
+		2.Option: https://wiki.tcl-lang.org/page/TclX
+
+		Maybe some Help about Extensions(Very good article):
+			https://manpages.ubuntu.com/manpages/impish/man3/CmdWrite.3tclx.html
+
+		Another Extension Article:
+			https://trudeau.dev/teach/tcl_tk/tcl_C.html
+
+x. Deployment in Binary Form
+
+
+If we want to have a BLOB Version of TCL we need to handle following things:
+	0. On absolutely init Interpreter we have to register static PAckage from c Source code.
+		- the Packae has to redirect file reading into BLOB archive and EvalContent.
+	1. redirect all command like source, eval and so so against files on FS into own BLOB Command
+		- this can be handled by renaming procs https://www.tcl.tk/man/tcl/TclCmd/rename.htm
+			
+
+
+Tcl_Main calls like:
+	Tcl_Main(argc, argv, Tcl_AppInit);
+	Tk_Main(argc, argv, Tcl_AppInit);
+	
+	more infos: https://www.tcl.tk/man/tcl8.6/TclLib/Tcl_Main.htm
+	
+Tcl_Main and Tk_Main calling Tcl_AppInit and Tcl_SourceRCFile (https://www.tcl.tk/man/tcl8.6/TclLib/SourceRCFile.htm) =>tcl_rcFileName
+Tcl_AppInit calls Tcl_Init
+	you can edit the StartupScript by Tcl_SetStartupScript(path, encoding) 
+Tcl_Init => help findind init.tcl script in tcl lib path
+
+May be useful for Startup:
+	Tcl_StaticPackage
+	
+	
+Analyzed WF:
+
+0. Tcl_Main calls -> Tcl_MainEx with platform specific init Proc
+	1. Tcl_AppInit:
+		- set some static Packages 
+		- set variable 'tcl_rcFileName' with value "~/tclshrc.tcl"
+			this variable file name was used inside -Tcl_SourceRCFile- and with it it calls: Tcl_EvalFile !!!!! Here we have to add delegation into BLOB
+	2. invoke startupscript:
+		    path = Tcl_GetStartupScript(&encodingName);
+			if (path != NULL) {
+			Tcl_ResetResult(interp);
+			code = Tcl_FSEvalFileEx(interp, path, encodingName); !!!!!! Here we have to change something
+	3. invoke Tcl_SourceRCFile(interp); for resource file which was set on TclAPP Init!!
+	
+
+File Evaluation:
+
+	hints: 
+		- Tcl_FSEvalFile is Tcl_FSEvalFileEx without encoding
+		- TclNREvalFile is an NRE-enabled version of Tcl_FSEvalFileEx
+
+	0. the source command is using 
+		TclNREvalFile(interp, fileName, encodingName);
+	1. Tcl_EvalFile Tcl_FSEvalFileEx#
+		This are opening a Channel: chan = Tcl_FSOpenFileChannel(interp, pathPtr, "r", 0644);
+		
+		Hint: Lets Check if we could establish a Thing like openBlobChannel based on path as identifier.
+		
+			start: https://www.tcl.tk/man/tcl8.6/TclLib/OpenFileChnl.htm
+			
+			1. We can add new Channel Type juhuuu \o/
+			2. For this we need to add a low level channel Driver
+			3. The low level Channel driver description you can find here:
+				https://www.tcl.tk/man/tcl8.6/TclLib/CrtChannel.htm   <----------------------------------------  Here we are !!!!!!!!!!!!!!!!!!!!!!!!!!!
+			
+	2. Evaluation Inout Stream is used by
+		Tcl_ReadChars: Location: generic/tclIO.c
+			1. Tcl_ReadChars(chan, objPtr, 1, 0)
+			Tcl_ReadChars(chan, objPtr, -1, memcmp(string, "\xEF\xBB\xBF", 3))
+			
+			Internal Reading with:
+				DoReadChars
+				
+				- Do Read chars internally using:
+						    if (binaryMode) {
+							copiedNow = ReadBytes(statePtr, objPtr, toRead);
+							} else {
+							copiedNow = ReadChars(statePtr, objPtr, toRead, &factor);
+							}
