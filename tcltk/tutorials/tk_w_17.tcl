@@ -10,28 +10,10 @@ proc CanvasHello {} {
 
 	$can bind movable <Button-1> {CanvasMark %x %y %W}
 	$can bind movable <B1-Motion> {CanvasDrag %x %y %W}
-}
 
-proc CanvasMark { x y can } {
-	global canvas
-	#map rfom view coordinates to canvas coordinates
-	set x [$can canvasx $x]
-	set y [$can canvasy $y]
-	#remember the object and its location
-	set canvas($can,obj) [$can find closest $x $y]
-	set canvas($can,x) $x
-	set canvas($can,y) $y
-}
-
-proc CanvasDrag {x y can} {
-	global canvas
-	set x [$can canvasx $x]
-	set y [$can canvasy $y]
-	set dx [expr {$x - $canvas($can,x)}]
-	set dy [expr {$y - $canvas($can,y)}]
-	$can move $canvas($can,obj) $dx $dy
-	set canvas($can,x) $x
-	set canvas($can,y) $y
+	$can create rect 10 10 30 30 -fill red -tag movable
+	$can create line 1 1 40 40 90 60 -width 2 -tag movable
+	$can create poly 1 1 40 40 90 60 -fill blue -tag movable
 }
 
 CanvasHello

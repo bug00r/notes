@@ -1,0 +1,128 @@
+Short Notes on the Book "The Linux Programming Interface"
+-----------------------------------------------------------
+
+This File should be a most comfortable Reference to the handled Topic inside of the Book.
+
+2. Fundamental Concepts
+
+  2.1 The Operating System: The Kernel
+
+    2.1.1 Tasks performed by the Kernel
+      - Process Sheduling: preemptive multitasking(multiple processes beside, controlled by the kernel or Kernel process sheduler)
+      - Memory Management: handled by virtual memory management. Processes are isolated from others and the Kernel for reading or modifsoying memory. Only Parts of Processes needs to be kept in RAM, more Processes beside runnable
+      - Provision of a File System on Disk
+      - Creation and termination pf processes
+      - Access to devices(mice, keyboards, disk, tape drivers...)
+      - networking
+      - Provision of a system call API
+      - handling multi user (virtual private computer)   
+
+    2.1.2 Kernel and User mode
+      - virtual memory marked as user or kernel space. In Usermode the CPU can't access to others and in kernelmode to all
+
+    2.1.3 process vs. Kernel Views of the System
+
+      2.1.3.1 Process
+        - not know when it will be processed on CPU
+        - not know which other processes are processed beside and in which order
+        - not know where it is located in RAM and if it is in RAM or SWAP Space
+        - not know where a file reside on disk, only the filename(with or without path)
+        - can't create new processes or ends his own existence directly but the can request this by calling interfaces
+        - has no direct I/O device access
+
+      2.1.3.2 Kernel
+        - knows and controls everything
+        - faciliates the runnig of all processes on the system
+        - decides which process obtain CPU time and when and how long
+        - maintaining processes meta data structure
+        - maintaining files used at programms and there physical locations on the disk
+        - maintaining virtual memory and SWAP Areas
+        - communication between processes
+        - creating new processes and terminating existing one
+        - performs communication through drivers direct I/O between devices and programms
+
+  2.2 The Shell
+    - Command or Command Line Interpreter
+    - In Different to other OS as part of the Kernel in Linux it is part of the user process
+    - for interactive using
+    - shell scripting
+    - supports:
+      - variables, loops, conditional statements, I/O commands, functions    
+    
+    2.2.1 Most important shells	
+      - Bourne Shell(sh): oldest widely used, features: I/O redirection, pipelines, filename generation(globbing), variables, manipulation of ENV vars, command substitution, background command execution, functions.
+      - C Shell(csh): control flow like C, command history, command-line editing, job control aliases, not backward compatibel to bourne shell, Standard on BSD
+      - Korn Shell(ksh): backward compatibel bourne shell, same features like c shell
+      - Bourne again shell(bash): summary of C- and Korn Shell, most widely used in Linux
+  
+  2.3 Users and Groups
+    
+    2.3.1 Users
+      - has unique login name(username)
+      - has a unique user ID (UID)
+      - each user is defined in pw file /etc/passwd with infos:
+        - Group ID
+        - Home Directory
+        - Login Shell
+        . Password in encrypted form(sometime saved in separate shadow password file)
+    
+    2.3.2 Groups
+      - useful for administrative purposes like:
+        - access control(files, system resources)
+      - early UNIX each user could be in one group
+      - BSD allowed multiple Groups by one user first
+      - Allow Users to multiple Groups was moved into POSIX.1-1990
+      - Groups are listed in "etc/group" with following infos:
+        - Groupname(unique)
+        - Group ID(numeric association)
+        - User List(Comma separated)
+
+    2.3.3 Super User
+      - has special privileges
+      - user ID 0
+      - called root
+      - bypasses als permission checks and can do:
+        - access any file
+        - send signals to any users processes
+        - adminstrative tasks
+
+  2.4 Single Directory Hierarchy, Directories, Links and Files
+    - root directory "/" (root fs, single filesystem, maintained by the kerne)
+    - all files and directories alre children of the rootfs
+
+	  ______________________________ / _____________________________________
+         /       |               |                        |                     \
+	bin 	boot		etc		       _home 			usr
+         |       |             /   \                  /     \                    | 
+	bash   vmlinuz     group   passwd           avr     mtk      	     _include
+                                                     |        |             /        \
+                                                   java      .bashrc      sys       stdio.h
+                                                     |                     |
+                                                Go.java                 types.h
+
+
+    
+   2.4.1 Files Types
+     - each file marked with type
+     - file types exists:
+       - regular or plain files
+       - devices, pipes, sockets
+       - directories
+       - symbolic links
+
+   2.4.2 Directories and Links
+     - 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
